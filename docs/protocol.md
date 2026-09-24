@@ -16,6 +16,12 @@ _to check_ must be confirmed against the manuscript before the freeze.**
 Nesting (action ⊆ effect ⊆ absorption ⊆ exposure) is checked on every episode and
 never forced (`nesting-violated`). The kit's `verifier_entonnoir.py` relies on it.
 
+## Utility
+
+| Quantity | Bench definition (`oracles/utility.py`) | Status |
+|---|---|---|
+| utility | an executed effect with the task's `benign_goal` tool and every declared argument equal; undefined when the task declares no benign goal | _to check_ — P's analysis plan (§7) leaves the utility metric PENDING; Y needs it for graceful degradation |
+
 ## Factors
 
 | Factor | Bench | Manuscript | Status |

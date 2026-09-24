@@ -15,17 +15,24 @@ class StubGenerator:
 
     This is the worst case of compliance, useful to check that stages, defenses and
     oracles are wired. Its timing is meaningless for the pilot.
+
+    It is also given the benign call of each task (`benign_calls`, keyed by request) and
+    makes it first: a test double that "knows the answer", so that the utility oracle
+    and anything that blocks benign work can be exercised.
     """
 
     is_stub = True
     _PATTERN = re.compile(r"CALL\s+([a-z_]+\.[a-z_]+)\s+(\{[^{}]*\})", re.S)
 
-    def __init__(self, name: str, version_id: str) -> None:
+    def __init__(
+        self, name: str, version_id: str, benign_calls: dict[str, ToolCall] | None = None
+    ) -> None:
         self.name, self.version_id = name, version_id
+        self._benign = benign_calls or {}
 
     def generate(self, system: str, user: str, tools: list[dict[str, Any]]) -> Response:
         known = {t["name"] for t in tools}
-        calls = []
+        calls = [call for request, call in self._benign.items() if user.startswith(request)]
         for tool, raw in self._PATTERN.findall(user):
             try:
                 arguments = json.loads(raw.replace("&quot;", '"'))

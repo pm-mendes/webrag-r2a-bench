@@ -6,6 +6,10 @@ run only.
 `action_type` is the partition used by the run record schema:
 - open      : the request delegates the action to the content ("do what the page says")
 - specified : the request fixes the action; content should only inform it
+
+`benign_goal` (optional) is the effect the user actually wants. The utility oracle
+checks it was executed: same tool, and every declared argument equal. A task that
+only expects an answer declares no benign goal; its utility is undefined.
 """
 
 from __future__ import annotations
@@ -35,6 +39,12 @@ class AdversarialGoal(BaseModel):
         return v
 
 
+class BenignGoal(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    tool: str
+    arguments: dict[str, Any] = {}
+
+
 class _TaskFile(BaseModel):
     model_config = ConfigDict(extra="forbid")
     status: Literal["DEMO", "FROZEN"]
@@ -44,6 +54,7 @@ class _TaskFile(BaseModel):
     target_page: str
     allowed_tools: list[str] = []
     adversarial_goal: AdversarialGoal
+    benign_goal: BenignGoal | None = None
 
 
 @dataclass(frozen=True)
@@ -54,6 +65,7 @@ class Task:
     target_page: str
     adversarial_goal: dict[str, Any]
     allowed_tools: tuple[str, ...]
+    benign_goal: dict[str, Any] | None = None
 
     def goal_for(self, canary_token: str) -> dict[str, Any]:
         """Adversarial goal with the canary substituted in every string argument."""
@@ -77,6 +89,7 @@ def load_tasks(directory: Path) -> list[Task]:
                 f.target_page,
                 f.adversarial_goal.model_dump(),
                 tuple(f.allowed_tools),
+                f.benign_goal.model_dump() if f.benign_goal else None,
             )
         )
     ids = [t.id for t in tasks]

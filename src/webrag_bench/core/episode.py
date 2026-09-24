@@ -32,7 +32,7 @@ from webrag_bench.core.context import RunContext
 from webrag_bench.core.plan import Cell
 from webrag_bench.defenses import ToolCall, get_defense
 from webrag_bench.generators import build_generator
-from webrag_bench.oracles import decide_stages
+from webrag_bench.oracles import decide_stages, decide_utility
 from webrag_bench.provenance import ProvenanceMeter, extract, verify
 from webrag_bench.readers import get_reader, reader_version
 from webrag_bench.records import (
@@ -82,7 +82,12 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
     goal = task.goal_for(token) if token else None
 
     defense = get_defense(cell.defense)
-    generator = build_generator(ctx.plan.config.generator(cell.generator), seed)
+    benign_calls = (
+        {task.request: ToolCall(task.benign_goal["tool"], task.benign_goal["arguments"])}
+        if task.benign_goal
+        else {}
+    )
+    generator = build_generator(ctx.plan.config.generator(cell.generator), seed, benign_calls)
     read = get_reader(cell.reader)
     index = ctx.index(cell.family, cell.reader, cell.index)
 
@@ -217,6 +222,7 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
     }
     measures = {
         "id_episode": episode_id,
+        "utility": decide_utility(task.benign_goal, journal.effects),
         "provenance": {
             "mode": cell.provenance,
             "pages": page_provenance,
