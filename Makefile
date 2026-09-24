@@ -2,7 +2,7 @@
 UV ?= uv
 WORKERS ?= 2
 
-.PHONY: help install lint format typecheck test cov check dry-run demo clean
+.PHONY: help install lint format typecheck test cov check dry-run y-dry-run demo clean
 
 help: ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -32,6 +32,9 @@ check: lint typecheck test ## Everything CI runs, except the dry run
 
 dry-run: ## 5 tasks x 2 conditions, stub generator
 	$(UV) run webrag-bench run config/plans/dry-run.yaml --workers $(WORKERS)
+
+y-dry-run: ## Paper Y dry run: provenance off/on, partial failures, demo policy
+	$(UV) run webrag-bench run config/plans/y-dry-run.yaml --workers $(WORKERS)
 
 demo: ## Every factor, 600 episodes, stub generator
 	$(UV) run webrag-bench run config/plans/demo-factors.yaml --workers $(WORKERS)

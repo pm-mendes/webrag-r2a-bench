@@ -14,9 +14,10 @@ class IncompleteFreezeError(RuntimeError):
 
 
 def blocking_markers(paths: list[Path]) -> list[str]:
-    """Files that still contain a PENDING value or a DEMO element."""
-    found = []
-    for f in collect_files(paths):
+    """Files that still contain a PENDING value or a DEMO element, and referenced paths
+    that do not exist (e.g. a directory still named "PENDING - ..." in the plan)."""
+    found = [f"{p}: missing path" for p in paths if not p.exists()]
+    for f in collect_files([p for p in paths if p.exists()]):
         try:
             text = f.read_text(encoding="utf-8")
         except UnicodeDecodeError:

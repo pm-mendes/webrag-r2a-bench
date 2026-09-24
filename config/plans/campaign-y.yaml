@@ -1,0 +1,28 @@
+# CAMPAIGN Y (08-TWEB-PBD) - skeleton. Refused while a PENDING value or a DEMO element
+# remains here or in anything the plan references.
+#
+# Size: the kit's PLAN_MANIFEST.json announces 9 408 episodes. 9408 = 2^6 x 3 x 7^2 has
+# no factor 17, so the "17 adversarial behaviours" cannot be a crossed factor of that
+# total. Reading to test first (adversarial review of 18/09): 16 adversarial behaviours
+# + 1 benign control, i.e. 16 x 12 tasks x 7 x 7 = 9 408. The subplans below must add up
+# to exactly the manifest total.
+#
+# What the campaign measures (Y analysis plan, section 2): delegation cost (paired
+# provenance off/on), utility under partial failure (fault_rates), inter-episode
+# equality (clean vs attacked pairs), behaviours blocked (per behaviour).
+name: campaign-y
+status: FROZEN
+canary_salt: "PENDING - drawn at the freeze"
+corpus: corpus
+attacks_dir: "PENDING - the adversarial behaviours of Y, as frozen templates"
+tasks_dir: config/frozen/tasks
+defenses_dir: config/frozen/defenses
+top_k: "PENDING"
+hybrid_alpha: "PENDING"
+embedder: {type: openai-compatible, base_url: "PENDING", model: "PENDING"}
+generators: "PENDING - the two frozen snapshots of Y"
+provenance:
+  key_seed: "PENDING - drawn at the freeze"
+  peer_party: peer
+  fault_mode: "PENDING - missing | corrupt | unknown-key"
+subplans: "PENDING - decomposition of 9 408 (defenses: none, pbd; provenance: off, on; fault_rates)"

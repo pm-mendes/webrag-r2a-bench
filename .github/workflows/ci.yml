@@ -52,8 +52,11 @@ jobs:
           enable-cache: true
       - run: uv sync --locked
       - run: uv run webrag-bench run config/plans/dry-run.yaml --workers 2
-      - name: campaign plan must stay refused until the freeze
+      - run: uv run webrag-bench run config/plans/y-dry-run.yaml --workers 2
+      - name: campaign plans must stay refused until the freeze
         run: |
           set +e
-          uv run webrag-bench freeze-check config/plans/campaign-p.yaml
-          test $? -eq 3
+          for plan in campaign-p campaign-y; do
+            uv run webrag-bench freeze-check config/plans/$plan.yaml
+            test $? -eq 3 || exit 1
+          done
