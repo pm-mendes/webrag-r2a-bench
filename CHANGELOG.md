@@ -8,6 +8,10 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Episode transcripts (`transcripts.jsonl`): what the generator saw and proposed,
+  stored beside the run records (outside the schema).
+- Annotation batch builder: stratified, blinded, deterministic, frozen by SHA-256
+  (`webrag-bench annotation build | verify`), with a DEMO batch and the P skeleton.
 - Repository governance: MIT license, contribution guide, changelog, citation file,
   issue and pull request templates.
 - Dependency lock file managed with `uv`.

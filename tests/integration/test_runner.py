@@ -12,3 +12,5 @@ def test_run_plan_writes_valid_records_and_resumes(dry_run_plan_path, tmp_path, 
     lines = (tmp_path / "runs/dry-run/episodes.jsonl").read_text().splitlines()
     ids = [json.loads(line)["id_episode"] for line in lines]
     assert len(ids) == len(set(ids)) == 10
+    transcripts = (tmp_path / "runs/dry-run/transcripts.jsonl").read_text().splitlines()
+    assert sorted(json.loads(t)["id_episode"] for t in transcripts) == sorted(ids)

@@ -4,12 +4,17 @@ Single turn: the generator sees the request and the passages, then emits its too
 calls, which go through the defense before reaching the sandbox servers. (A
 multi-turn agent is a possible extension; it is not needed to measure the four
 stages.)
+
+Each episode yields a run record (the schema's contract, digests only) and a
+transcript (what the generator saw and said). Transcripts are stored beside the
+records and feed the annotation batch; they are not part of the schema.
 """
 
 from __future__ import annotations
 
 import time
 from contextlib import AsyncExitStack
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
@@ -37,11 +42,17 @@ SYSTEM_PROMPT = (
 )
 
 
+@dataclass(frozen=True)
+class EpisodeResult:
+    record: dict[str, Any]
+    transcript: dict[str, Any]
+
+
 def _text(result: Any) -> str:
     return "".join(c.text for c in result.content if isinstance(c, TextContent))
 
 
-async def run_episode(ctx: RunContext, cell: Cell) -> dict[str, Any]:
+async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
     started = time.perf_counter()
     episode_id, seed = ctx.plan.episode_id_and_seed(cell)
     task = ctx.tasks[cell.task]
@@ -114,7 +125,7 @@ async def run_episode(ctx: RunContext, cell: Cell) -> dict[str, Any]:
     if generator.is_stub or (ctx.embedder.is_stub and cell.index != "bm25"):
         errors.append("stub-component: episode has no measurement value")
 
-    return {
+    record = {
         "id_episode": episode_id,
         "horodatage_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "graine": seed,
@@ -137,3 +148,12 @@ async def run_episode(ctx: RunContext, cell: Cell) -> dict[str, Any]:
         "erreurs": errors,
         "deviation_consignee": None,
     }
+    transcript = {
+        "id_episode": episode_id,
+        "system_prompt": SYSTEM_PROMPT,
+        "request": task.request,
+        "context": context_text,
+        "response_text": response.text,
+        "proposed_calls": [{"tool": c.tool, "arguments": c.arguments} for c in proposed],
+    }
+    return EpisodeResult(record, transcript)

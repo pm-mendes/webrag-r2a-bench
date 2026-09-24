@@ -1,8 +1,8 @@
 """Runner: builds the archive, fingerprints the freeze, runs the cells, writes JSONL.
 
-Output goes to runs/<plan>/: `episodes.jsonl`, `failures.jsonl`, `freeze.json`,
-`corpus.warc`. A rerun resumes where it stopped: episode ids are deterministic and
-episodes already written are skipped.
+Output goes to runs/<plan>/: `episodes.jsonl`, `transcripts.jsonl`,
+`failures.jsonl`, `freeze.json`, `corpus.warc`. A rerun resumes where it stopped:
+episode ids are deterministic and episodes already written are skipped.
 """
 
 from __future__ import annotations
@@ -10,7 +10,6 @@ from __future__ import annotations
 import asyncio
 import json
 import multiprocessing as mp
-import subprocess
 import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,8 +18,9 @@ from typing import Any
 from webrag_bench import ROOT
 from webrag_bench.attacks import load_templates
 from webrag_bench.core.context import RunContext
-from webrag_bench.core.episode import run_episode
+from webrag_bench.core.episode import EpisodeResult, run_episode
 from webrag_bench.core.plan import Cell, Plan, load_plan
+from webrag_bench.core.versioning import bench_version
 from webrag_bench.corpus import WarcReplay, build_adversarial_pages, load_benign_pages, write_warc
 from webrag_bench.freeze import fingerprint
 from webrag_bench.records import append_record, completed_ids
@@ -42,21 +42,6 @@ class RunSummary:
     skipped: int
     written: int
     failed: int
-
-
-def bench_version() -> str:
-    """Git tag (or commit) of the bench; `-dirty` if the tree has local changes."""
-    try:
-        out = subprocess.run(
-            ["git", "describe", "--tags", "--always", "--dirty"],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return "untagged"
-    return out or "untagged"
 
 
 def prepare(plan: Plan, output_dir: Path) -> Prepared:
@@ -101,12 +86,18 @@ def _init_worker(plan_path: str, warc: str, freeze_fp: str, version: str) -> Non
     _CTX = RunContext(plan, WarcReplay(Path(warc)), freeze_fp, version)
 
 
-def _run_one(cell: Cell) -> dict[str, Any]:
-    assert _CTX is not None, "worker not initialised"
+def _run_one(cell: Cell) -> EpisodeResult | dict[str, Any]:
+    if _CTX is None:
+        raise RuntimeError("worker not initialised")
     try:
         return asyncio.run(run_episode(_CTX, cell))
     except Exception as e:  # one failing episode must not kill the worker
-        return {"_failed": True, "cell": cell.key(), "error": f"{type(e).__name__}: {e}"}
+        return {"cell": cell.key(), "error": f"{type(e).__name__}: {e}"}
+
+
+def _append_json(obj: dict[str, Any], path: Path) -> None:
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(obj, ensure_ascii=False) + "\n")
 
 
 def run_plan(
@@ -115,6 +106,7 @@ def run_plan(
     plan = load_plan(plan_path)
     prepared = prepare(plan, ROOT / "runs" / plan.name)
     episodes = prepared.output_dir / "episodes.jsonl"
+    transcripts = prepared.output_dir / "transcripts.jsonl"
     failures = prepared.output_dir / "failures.jsonl"
 
     cells = plan.cells()
@@ -129,14 +121,15 @@ def run_plan(
     written = failed = 0
     init_args = (str(plan.path), str(prepared.warc), prepared.freeze_fingerprint, bench_version())
     with mp.get_context("spawn").Pool(workers, _init_worker, init_args) as pool:
-        for record in pool.imap_unordered(_run_one, todo):
-            if record.get("_failed"):
-                failed += 1
-                with failures.open("a", encoding="utf-8") as f:
-                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
-            else:
-                append_record(record, episodes)
+        for result in pool.imap_unordered(_run_one, todo):
+            if isinstance(result, EpisodeResult):
+                # transcript first: a record never exists without its transcript
+                _append_json(result.transcript, transcripts)
+                append_record(result.record, episodes)
                 written += 1
+            else:
+                _append_json(result, failures)
+                failed += 1
             if (written + failed) % progress_every == 0:
                 print(f"  {written + failed}/{len(todo)}", flush=True)
     return RunSummary(len(cells), len(done), written, failed)

@@ -1,0 +1,14 @@
+# Annotation batch of paper P - skeleton. Refused while a PENDING value remains.
+# Partition recommended on 18/09 (kit/PREREGISTREMENT.md section 7): family x defense on/off,
+# 8 strata, 30 episodes each, ceiling 240. The sampling fractions and the partition
+# are frozen BEFORE annotation; the judge question comes from the frozen judge protocol.
+name: batch-p
+status: FROZEN
+source_run: campaign-p
+seed: "PENDING - drawn at the freeze"
+strata: [family, defense_on]
+allocation: {per_stratum: "PENDING - 30 recommended"}
+max_items: "PENDING - 240 under the revised calendar"
+exclude_stub_episodes: true
+question: "PENDING - from config/frozen/judge/"
+labels: "PENDING"
