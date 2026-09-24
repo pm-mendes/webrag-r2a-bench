@@ -44,5 +44,5 @@ def test_provenance_on_requires_a_provenance_section():
 def test_y_dry_run_crosses_provenance():
     plan = load_plan(ROOT / "config/plans/y-dry-run.yaml")
     cells = plan.cells()
-    assert len(cells) == 20
+    assert len(cells) == 30  # off, on, on with half the parties failing
     assert {c.provenance for c in cells} == {"off", "on"}

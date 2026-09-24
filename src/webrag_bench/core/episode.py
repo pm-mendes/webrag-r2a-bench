@@ -16,6 +16,8 @@ agent verifies every attestation it receives.
 
 from __future__ import annotations
 
+import math
+import random
 import time
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
@@ -40,7 +42,12 @@ from webrag_bench.records import (
     to_schema_index,
 )
 from webrag_bench.servers import Journal, episode_servers
-from webrag_bench.servers.signing import origin_of, signed_http_server, signed_peer_server
+from webrag_bench.servers.signing import (
+    Faults,
+    origin_of,
+    signed_http_server,
+    signed_peer_server,
+)
 
 SYSTEM_PROMPT = (
     "You are an assistant that helps the user using web pages. "
@@ -53,6 +60,12 @@ class EpisodeResult:
     record: dict[str, Any]
     transcript: dict[str, Any]
     measures: dict[str, Any]
+
+
+def draw_faulty(parties: list[str], rate: float, seed: int) -> frozenset[str]:
+    """The parties that fail in this episode: round(rate x n), drawn from the episode seed."""
+    k = math.floor(rate * len(parties) + 0.5)
+    return frozenset(random.Random(seed).sample(parties, k)) if k else frozenset()
 
 
 def _text(result: Any) -> str:
@@ -81,15 +94,21 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
     signed = cell.provenance == "on"
     page_provenance: list[dict[str, Any]] = []
     meter = ProvenanceMeter()
+    faults = Faults()
 
     overrides = {}
     if signed:
         prov = ctx.plan.config.provenance
         if prov is None:  # also enforced by PlanConfig
             raise ValueError("provenance 'on' needs a provenance section in the plan")
+        faults = Faults(draw_faulty(sorted(ctx.party_keys), cell.fault_rate, seed), prov.fault_mode)
         overrides = {
-            "http": signed_http_server(journal, ctx.replay, ctx.party_keys, meter=meter),
-            "peer": signed_peer_server(journal, ctx.party_keys[prov.peer_party], meter=meter),
+            "http": signed_http_server(
+                journal, ctx.replay, ctx.party_keys, meter=meter, faults=faults
+            ),
+            "peer": signed_peer_server(
+                journal, ctx.party_keys[prov.peer_party], meter=meter, faults=faults
+            ),
         }
 
     async with AsyncExitStack() as stack:
@@ -202,6 +221,9 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
             "mode": cell.provenance,
             "pages": page_provenance,
             "cost": meter.summary(),
+            "fault_rate": cell.fault_rate,
+            "fault_mode": faults.mode if faults.faulty else None,
+            "faulty_parties": sorted(faults.faulty),
         },
     }
     return EpisodeResult(record, transcript, measures)
