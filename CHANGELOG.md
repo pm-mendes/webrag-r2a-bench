@@ -20,6 +20,9 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 - Tests for the OpenAI-compatible client (model substitution detection, tool name
   mapping), the three indexes, and resuming an interrupted plan.
 
+- Technical documentation: architecture, protocol mapping, freeze procedure,
+  operations.
+
 ### Changed
 - Code, identifiers, configuration, demo data and documentation are now in English.
   The run record schema keeps its French field names (contract with the kit).
