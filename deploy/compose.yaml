@@ -1,0 +1,61 @@
+# OVH machine: the 8B generator and the embedder served by vLLM, and the bench.
+# The bench only reaches them over the `models` network, which has no Internet access
+# (`internal: true`). For API generators, add compose.api.yaml (see docs/deployment.md).
+#
+#   cp deploy/.env.example deploy/.env      # then fill it
+#   docker compose -f deploy/compose.yaml --env-file deploy/.env up -d generator embedder
+#   docker compose -f deploy/compose.yaml --env-file deploy/.env run --rm bench run config/plans/pilot.yaml --workers 24
+
+name: webrag-bench
+
+x-vllm: &vllm
+  image: ${VLLM_IMAGE:?set VLLM_IMAGE to an exact vllm/vllm-openai tag}
+  environment:
+    HF_HUB_OFFLINE: "1"          # weights are downloaded beforehand, never at serving time
+  volumes:
+    - ${HF_CACHE:?set HF_CACHE}:/root/.cache/huggingface
+  networks: [models]
+  ipc: host
+  restart: unless-stopped
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            capabilities: [gpu]
+
+services:
+  generator:
+    <<: *vllm
+    command: >
+      --model ${GEN_MODEL:?}
+      --revision ${GEN_REVISION:?pin the exact commit of the weights}
+      --served-model-name ${GEN_VERSION_ID:?}
+      --host 0.0.0.0 --port 8000
+      ${GEN_EXTRA_ARGS:-}
+
+  embedder:
+    <<: *vllm
+    command: >
+      --model ${EMBED_MODEL:?}
+      --revision ${EMBED_REVISION:?pin the exact commit of the weights}
+      --served-model-name ${EMBED_VERSION_ID:?}
+      --host 0.0.0.0 --port 8001
+      ${EMBED_SERVE_ARGS:?embedding mode flags of your vLLM version}
+
+  bench:
+    image: webrag-bench:${BENCH_VERSION:?}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        BENCH_VERSION: ${BENCH_VERSION}
+    volumes:
+      - ../runs:/bench/runs
+    networks: [models]
+    depends_on: [generator, embedder]
+    profiles: [bench]
+
+networks:
+  models:
+    internal: true

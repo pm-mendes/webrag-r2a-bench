@@ -8,6 +8,10 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Deployment for the OVH machine: bench Docker image (`make image`), compose file with
+  vLLM generator and embedder on an internal network, API egress override,
+  `.env.example`. Not yet tested on the target machine.
+- `WEBRAG_BENCH_VERSION` overrides the git-derived bench version (set at image build).
 - Campaign monitoring (`webrag-bench status`): progress, measured throughput over the
   last hour, projected end against a deadline, anomalies (model substitution, tool
   errors, failures), and a Markdown checkpoint report.

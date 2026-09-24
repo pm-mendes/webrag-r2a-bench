@@ -38,3 +38,9 @@ demo: ## Every factor, 600 episodes, stub generator
 
 clean: ## Remove run outputs and caches
 	rm -rf runs .pytest_cache .mypy_cache .ruff_cache .coverage
+
+BENCH_VERSION ?= $(shell git describe --tags --always --dirty)
+
+.PHONY: image
+image: ## Build the bench image, tagged with the git version
+	docker build -f deploy/Dockerfile --build-arg BENCH_VERSION=$(BENCH_VERSION) -t webrag-bench:$(BENCH_VERSION) .

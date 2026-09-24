@@ -1,0 +1,15 @@
+# Adds Internet egress to the bench, for API generators. The bench's own network guard
+# still refuses every host that is not a declared generator or embedder endpoint.
+#
+#   docker compose -f deploy/compose.yaml -f deploy/compose.api.yaml --env-file deploy/.env run --rm bench ...
+
+services:
+  bench:
+    networks: [models, egress]
+    environment:
+      WEBRAG_KEY_G1: ${WEBRAG_KEY_G1:-}
+      WEBRAG_KEY_G2: ${WEBRAG_KEY_G2:-}
+      WEBRAG_KEY_G3: ${WEBRAG_KEY_G3:-}
+
+networks:
+  egress: {}
