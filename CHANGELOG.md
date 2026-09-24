@@ -8,6 +8,10 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Defense interface: `authorize(call, task, context)` with a `DecisionContext`
+  carrying per-page signed provenance; `requires_provenance` flag. DEMO policy
+  `provenance-demo` (not the mechanism of paper Y); `pbd` registered as pending.
+  The Y dry run gains a policy subplan.
 - Paper Y: inter-episode equality. Measures record the cell and an `effects_digest`;
   `analysis.equality` pairs clean and attacked episodes of the same fixed plan and
   reports equal pairs and violations (operationalisation to check).

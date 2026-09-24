@@ -33,6 +33,18 @@ transitively and reports unknown parents and cycles.
 | issuer | `prov:Agent` |
 | `derived_from` | `prov:wasDerivedFrom` between entities |
 
+## Policies
+
+Defenses receive a `DecisionContext` with the verification result of every page. The
+DEMO policy `provenance-demo` refuses effectful calls when any page failed
+verification. It is **not** the mechanism of paper Y (`pbd`, pending), and its dry-run
+results show two things worth keeping in mind:
+
+- a signature attests **origin, not harmlessness**: an injection hosted on a
+  legitimate origin is signed, verifies, and passes the gate;
+- when signing parties fail, the gate blocks benign work too — the quantity the
+  graceful-degradation measure is about.
+
 ## Deliberate limits
 
 - **Not a Verifiable Credential.** The payload is VC-shaped in spirit only; the proof
@@ -43,5 +55,6 @@ transitively and reports unknown parents and cycles.
   whether text in that page determined an argument of a later call. That inference is
   the open problem PACT (arXiv:2605.11039) isolates; this block does not claim to solve
   it (see `08-TWEB-PBD/VEILLE-NOUVEAUTE.md` §1.1).
-- **Not wired into episodes yet.** The 17 adversarial behaviours, the policies and the
-  A2A transport come with the Y protocol, once frozen.
+- **Wired into episodes as a factor** (`provenance`, `fault_rates`, see
+  `config/plans/y-dry-run.yaml`); the 17 adversarial behaviours, the `pbd` mechanism
+  and the A2A transport come with the Y protocol, once frozen.

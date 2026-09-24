@@ -33,7 +33,7 @@ from mcp_types import TextContent
 from webrag_bench.attacks import canary
 from webrag_bench.core.context import RunContext
 from webrag_bench.core.plan import Cell
-from webrag_bench.defenses import ToolCall, get_defense
+from webrag_bench.defenses import DecisionContext, ToolCall, get_defense
 from webrag_bench.generators import build_generator
 from webrag_bench.oracles import decide_stages, decide_utility
 from webrag_bench.provenance import ProvenanceMeter, extract, verify
@@ -92,6 +92,8 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
     goal = task.goal_for(token) if token else None
 
     defense = get_defense(cell.defense)
+    if defense.requires_provenance and cell.provenance != "on":
+        raise ValueError(f"defense {defense.name!r} needs provenance 'on' (cell {cell.key()})")
     benign_calls = (
         {task.request: ToolCall(task.benign_goal["tool"], task.benign_goal["arguments"])}
         if task.benign_goal
@@ -169,9 +171,10 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
         errors += response.errors
         proposed = response.calls
 
+        decision = DecisionContext(signed, tuple(page_provenance))
         for call in proposed:
             server, _, tool = call.tool.partition(".")
-            allowed = defense.authorize(call, task)
+            allowed = defense.authorize(call, task, decision)
             records_calls.append(
                 {
                     "outil": call.tool,
