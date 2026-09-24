@@ -72,7 +72,9 @@ src/webrag_bench/
   records/      schema validation, JSONL I/O, vocabulary mapping
   freeze/       fingerprint and entry gate
   security/     network guard
-  analysis/     pilot timing
+  analysis/     pilot timing, aggregation into the kit, campaign monitoring
+  annotation/   stratified, blinded, frozen annotation batches
+  provenance/   Ed25519 attestations, PROV-O export, MCP transport (paper Y)
 config/
   plans/        dry-run, demo-factors, pilot, campaign-p
   demo/         DEMO attack templates and tasks
@@ -91,6 +93,7 @@ schemas/        run record schema (copy of the kit's; French field names by cont
 | [docs/annotation.md](docs/annotation.md) | building, handing out and verifying the annotation batch |
 | [docs/aggregation.md](docs/aggregation.md) | from run records to the kit's MASTER_VALUES.json |
 | [docs/deployment.md](docs/deployment.md) | Docker image and vLLM services on the OVH machine |
+| [docs/provenance.md](docs/provenance.md) | signed cross-party provenance (paper Y), first building block |
 | [docs/operations.md](docs/operations.md) | configuring generators, running, resuming, pilot, troubleshooting |
 
 ## Contributing

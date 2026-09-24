@@ -8,6 +8,10 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Signed cross-party provenance for paper Y (first block): deterministic Ed25519 party
+  keys, attestations with derivation chains, verification, PROV-O JSON-LD export,
+  transport in MCP result `_meta`, signing http and peer servers. Not wired into
+  episodes yet.
 - Deployment for the OVH machine: bench Docker image (`make image`), compose file with
   vLLM generator and embedder on an internal network, API egress override,
   `.env.example`. Not yet tested on the target machine.

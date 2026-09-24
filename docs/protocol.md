@@ -32,7 +32,8 @@ never forced (`nesting-violated`). The kit's `verifier_entonnoir.py` relies on i
 
 - Multi-turn agents (single turn only).
 - GASLITE retrieval-optimised attack pages.
-- Paper Y: signing peer agent and servers (PROV-O / Verifiable Credentials), the 17
-  adversarial behaviours.
+- Paper Y: signed attestations, PROV-O export and signing http/peer servers exist
+  (`docs/provenance.md`) but are not wired into episodes; the 17 adversarial
+  behaviours, the policies and the A2A transport are missing.
 - The LLM judge and the annotation batch (the judge runs downstream, on a sample,
   and writes a separate field).
