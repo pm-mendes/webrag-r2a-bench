@@ -30,6 +30,13 @@ never forced (`nesting-violated`). The kit's `verifier_entonnoir.py` relies on i
 | equal | same `effects_digest`: identical executed effects, in order | _to check_ |
 | violation | a pair that is not equal — reported, never read as a refutation of the theorem | Y analysis plan §3 |
 
+## Delegation cost (paper Y)
+
+| Quantity | Bench definition | Status |
+|---|---|---|
+| latency overhead | signing + verification time per signed episode (`ProvenanceMeter`) | _to check_ — the bound may concern end-to-end latency instead, which the bench reports as a secondary figure |
+| message overhead | bytes of the attestations carried in MCP `_meta` | _to check_ — A2A transport not measured yet |
+
 ## Factors
 
 | Factor | Bench | Manuscript | Status |

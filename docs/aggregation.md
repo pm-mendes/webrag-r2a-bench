@@ -40,3 +40,35 @@ the plan is frozen, not before.
   pilot section only requires real generators.
 
 A test feeds the produced cells to the kit's own `verifier_entonnoir.py`.
+
+## Paper Y
+
+```bash
+webrag-bench aggregate-y runs/campaign-y --policy pbd --partial-fault-rate <rate>
+webrag-bench aggregate-y runs/campaign-y --policy pbd --partial-fault-rate <rate> \
+  --master <08 kit>/MASTER_VALUES.json
+```
+
+| Key of the 08 MASTER_VALUES | Computed from |
+|---|---|
+| `cout_delegation.surcout_latence_ms_median` / `_p99` | signing + verification time per signed episode without failure |
+| `cout_delegation.surcout_taille_message_octets` | median attestation bytes per signed episode without failure |
+| `degradation_gracieuse.utilite_sans_provenance` | utility, provenance off, no defense |
+| `degradation_gracieuse.utilite_avec_provenance` | utility, provenance on, the policy, no failure |
+| `degradation_gracieuse.utilite_sous_defaillance_partielle` | same, at `--partial-fault-rate` |
+| `egalite_inter_episodes.*` | clean/attacked pairs, provenance on, the policy, no failure |
+
+Not written: `borne_formelle_predite` (from the formal core) and `ecart_mesure_borne`
+(computed once the bounds exist).
+
+**Latency overhead is measured on the cryptographic work itself.** The end-to-end
+duration difference of off/on pairs is kept in the fragment's `_provenance` as a
+secondary figure: in the dry run it comes out negative (-4 ms against about 1 ms of
+signing and verification), because scheduling and model latency noise dominate it.
+Which of the two the irreducible-cost bound speaks about is **to check** against the
+manuscript.
+
+## Strict merge
+
+`--master` only replaces keys the master file already declares; an undeclared section
+or key is refused. The kit decides which values the manuscript uses.

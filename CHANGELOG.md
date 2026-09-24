@@ -8,6 +8,8 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- `webrag-bench aggregate-y`: paper Y measures (delegation cost, graceful degradation,
+  inter-episode equality) in the 08 MASTER_VALUES format; bounds are never written.
 - `campaign-y` plan skeleton (refused until the freeze), `make y-dry-run`, and CI runs
   of the Y dry run and of both campaign refusals.
 
@@ -68,6 +70,8 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
   operations.
 
 ### Changed
+- Merging into a MASTER_VALUES file is strict: undeclared sections or keys are refused.
+  `pilot --master` writes only the pilot keys the target file declares (P and Y differ).
 - Code, identifiers, configuration, demo data and documentation are now in English.
   The run record schema keeps its French field names (contract with the kit).
 - Package split into subpackages (`core`, `corpus`, `attacks`, `defenses`,
