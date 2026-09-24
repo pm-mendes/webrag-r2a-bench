@@ -8,6 +8,9 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Utility oracle: tasks may declare a `benign_goal`; `measures.utility` says whether it
+  was executed (undefined for answer-only tasks). The stub generator makes the benign
+  call first so that the oracle is exercised in dry runs. Demo tasks declare goals.
 - Paper Y: partial failure of signing parties. `fault_rates` factor and plan-level
   `fault_mode` (`missing`, `corrupt`, `unknown-key`); failing parties drawn from the
   episode seed and recorded in `measures.provenance.faulty_parties`.

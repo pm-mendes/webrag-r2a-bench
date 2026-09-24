@@ -36,3 +36,13 @@ def test_transcript_holds_what_the_generator_saw(dry_run_plan_path, tmp_path):
     assert t["request"] == ctx.tasks[plan.cells()[0].task].request
     assert any("CALL" in passage for passage in t["context"])
     assert t["proposed_calls"]
+
+
+def test_utility_survives_a_defense_that_only_blocks_the_attack(dry_run_plan_path, tmp_path):
+    plan = load_plan(dry_run_plan_path)
+    prepared = prepare(plan, tmp_path)
+    ctx = RunContext(plan, WarcReplay(prepared.warc), prepared.freeze_fingerprint, "test")
+    cell = next(c for c in plan.cells() if c.task == "T01" and c.defense == "tool-allowlist-demo")
+    result = asyncio.run(run_episode(ctx, cell))
+    assert result.record["etages"]["action"] is False
+    assert result.measures["utility"] is True
