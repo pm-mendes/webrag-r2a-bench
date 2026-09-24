@@ -6,6 +6,11 @@ reported in the paper. The list of frozen elements is `07-TWEB-R2A/kit/GEL.md`.
 
 ## Before the freeze
 
+The procedure is the same for P (`campaign-p.yaml`, kit `07-TWEB-R2A/kit/`) and Y
+(`campaign-y.yaml`, kit `08-TWEB-PBD/kit/`). For Y, the adversarial behaviours must be
+enumerated first (Y pre-registration §3), and `pbd` imported into
+`config/frozen/defenses/`.
+
 1. **Import the frozen elements** from the manuscript into `config/frozen/`
    (`attacks/`, `tasks/`, `defenses/`, `judge/`), with `status: FROZEN`. Replace the
    DEMO corpus in `corpus/`.

@@ -8,6 +8,12 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- `campaign-y` plan skeleton (refused until the freeze), `make y-dry-run`, and CI runs
+  of the Y dry run and of both campaign refusals.
+
+### Fixed
+- The freeze gate reported a crash instead of a refusal when a plan still named a
+  directory "PENDING - ..."; missing referenced paths are now listed as blocking.
 - Defense interface: `authorize(call, task, context)` with a `DecisionContext`
   carrying per-page signed provenance; `requires_provenance` flag. DEMO policy
   `provenance-demo` (not the mechanism of paper Y); `pbd` registered as pending.

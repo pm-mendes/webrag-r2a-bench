@@ -16,7 +16,7 @@ def test_cells_and_ids_are_deterministic(dry_run_plan_path):
     assert len({i for i, _ in ids}) == len(ids)
 
 
-@pytest.mark.parametrize("plan", ["campaign-p.yaml", "pilot.yaml"])
+@pytest.mark.parametrize("plan", ["campaign-p.yaml", "campaign-y.yaml", "pilot.yaml"])
 def test_unresolved_plans_are_refused(plan):
     with pytest.raises(IncompleteFreezeError):
         load_plan(ROOT / "config/plans" / plan)
@@ -47,3 +47,11 @@ def test_undeclared_generator_is_rejected():
                 },
             }
         )
+
+
+def test_missing_referenced_path_is_reported_not_raised(tmp_path):
+    from webrag_bench.freeze import blocking_markers
+
+    assert blocking_markers([tmp_path / "PENDING - later"]) == [
+        f"{tmp_path / 'PENDING - later'}: missing path"
+    ]
