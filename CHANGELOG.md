@@ -8,6 +8,9 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Paper Y: partial failure of signing parties. `fault_rates` factor and plan-level
+  `fault_mode` (`missing`, `corrupt`, `unknown-key`); failing parties drawn from the
+  episode seed and recorded in `measures.provenance.faulty_parties`.
 - Paper Y: delegation cost per episode (`measures.provenance.cost`): signing and
   verification time, number of attestations, bytes added to messages. Peer answers
   are verified too (`unverified-attestation` otherwise).

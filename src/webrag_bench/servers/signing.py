@@ -5,19 +5,30 @@
 - `signed_peer_server`: the peer agent signs its answer to a delegation, and declares
   which earlier attestations the delegated instruction derives from.
 
-Not yet wired into episodes: the Y protocol (adversarial behaviours, policies) is
-still to be frozen.
+Partial failure (degradation experiments): a party listed in `faulty` misbehaves
+according to `fault_mode` — `missing` (no attestation), `corrupt` (signature
+altered), `unknown-key` (signed with a key absent from the registry).
 """
 
 from __future__ import annotations
 
+import base64
+import dataclasses
 import urllib.parse
 
 from mcp.server.mcpserver import MCPServer
-from mcp_types import CallToolResult
+from mcp_types import CallToolResult, TextContent
 
 from webrag_bench.corpus import NotInCorpusError, WarcReplay
-from webrag_bench.provenance import KeyRegistry, PartyKey, ProvenanceMeter, attach, issue
+from webrag_bench.provenance import (
+    Attestation,
+    KeyRegistry,
+    PartyKey,
+    ProvenanceMeter,
+    attach,
+    canonical_json,
+    issue,
+)
 from webrag_bench.servers.journal import Journal
 
 
@@ -33,15 +44,42 @@ def party_keys(parties: list[str], seed: str) -> tuple[dict[str, PartyKey], KeyR
     return keys, registry
 
 
+@dataclasses.dataclass(frozen=True)
+class Faults:
+    """Which parties misbehave in this episode, and how."""
+
+    faulty: frozenset[str] = frozenset()
+    mode: str = "missing"
+
+    def apply(self, party: str, text: str, attestation: Attestation) -> CallToolResult:
+        """Result as sent by `party`, degraded if the party is faulty."""
+        if party not in self.faulty:
+            return attach(text, attestation)
+        if self.mode == "missing":
+            return CallToolResult(content=[TextContent(type="text", text=text)])
+        if self.mode == "corrupt":
+            sig = attestation.signature
+            altered = ("A" if sig[0] != "A" else "B") + sig[1:]
+            return attach(text, dataclasses.replace(attestation, signature=altered))
+        if self.mode == "unknown-key":
+            # same payload, signed with a key the registry does not hold for `party`
+            rogue = PartyKey.derive(party, "rogue-key")
+            signature = base64.urlsafe_b64encode(rogue.sign(canonical_json(attestation.payload())))
+            return attach(text, dataclasses.replace(attestation, signature=signature.decode()))
+        raise ValueError(f"unknown fault mode {self.mode!r}")
+
+
 def signed_http_server(
     journal: Journal,
     replay: WarcReplay,
     keys: dict[str, PartyKey],
     issued_at: str = "",
     meter: ProvenanceMeter | None = None,
+    faults: Faults | None = None,
 ) -> MCPServer:
     server = MCPServer("http")
     m = meter or ProvenanceMeter()
+    f = faults or Faults()
 
     @server.tool()
     def get(url: str) -> CallToolResult:
@@ -54,7 +92,7 @@ def signed_http_server(
         if key is None:
             return CallToolResult(content=[], is_error=True)
         att = m.timed_sign(issue, key, "http.get", {"url": url}, page, issued_at=issued_at)
-        return attach(page, att)
+        return f.apply(key.party, page, att)
 
     @server.tool()
     def post(url: str, data: str) -> str:
@@ -66,10 +104,15 @@ def signed_http_server(
 
 
 def signed_peer_server(
-    journal: Journal, key: PartyKey, issued_at: str = "", meter: ProvenanceMeter | None = None
+    journal: Journal,
+    key: PartyKey,
+    issued_at: str = "",
+    meter: ProvenanceMeter | None = None,
+    faults: Faults | None = None,
 ) -> MCPServer:
     server = MCPServer("peer")
     m = meter or ProvenanceMeter()
+    f = faults or Faults()
 
     @server.tool()
     def delegate(instruction: str, derived_from: list[str] | None = None) -> CallToolResult:
@@ -85,6 +128,6 @@ def signed_peer_server(
             derived_from=tuple(derived_from or ()),
             issued_at=issued_at,
         )
-        return attach(answer, att)
+        return f.apply(key.party, answer, att)
 
     return server

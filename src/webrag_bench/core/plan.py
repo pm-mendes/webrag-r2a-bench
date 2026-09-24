@@ -37,11 +37,13 @@ class Cell:
     reader: str
     repetition: int
     provenance: str = "off"
+    fault_rate: float = 0.0
 
     def key(self) -> str:
         # factors added after P are appended only when not at their default value,
         # so that the episode ids of existing plans do not change
         extra = "" if self.provenance == "off" else f"|prov={self.provenance}"
+        extra += "" if self.fault_rate == 0.0 else f"|fault={self.fault_rate:g}"
         return self._base_key() + extra
 
     def _base_key(self) -> str:
@@ -89,7 +91,7 @@ class Plan:
             unknown = set(tasks) - known
             if unknown:
                 raise ValueError(f"subplan {name}: unknown tasks {sorted(unknown)}")
-            for task, family, defense, generator, index, reader, rep, prov in itertools.product(
+            for combo in itertools.product(
                 tasks,
                 grid.families,
                 grid.defenses,
@@ -98,8 +100,12 @@ class Plan:
                 grid.readers,
                 range(grid.repetitions),
                 grid.provenance,
+                grid.fault_rates,
             ):
-                cells.append(Cell(name, task, family, defense, generator, index, reader, rep, prov))
+                cell = Cell(name, *combo)
+                if cell.provenance == "off" and cell.fault_rate > 0:
+                    continue  # signing servers cannot fail when nothing is signed
+                cells.append(cell)
         return cells
 
     def episode_id_and_seed(self, cell: Cell) -> tuple[str, int]:

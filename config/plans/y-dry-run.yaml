@@ -13,6 +13,7 @@ generators:
   - {name: stub, type: stub, version_id: stub-0}
 provenance:
   key_seed: y-dry-run-keys-v1
+  fault_mode: corrupt
 subplans:
   main:
     tasks: all
@@ -23,3 +24,4 @@ subplans:
     readers: [bs4-text]
     repetitions: 1
     provenance: ["off", "on"]
+    fault_rates: [0.0, 0.5]

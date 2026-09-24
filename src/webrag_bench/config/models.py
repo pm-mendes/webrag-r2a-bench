@@ -9,6 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Family = Literal["none", "F1", "F2", "F3", "F4"]
 ProvenanceMode = Literal["off", "on"]
+FaultMode = Literal["missing", "corrupt", "unknown-key"]
 IndexName = Literal["dense", "bm25", "hybrid"]
 
 
@@ -62,6 +63,13 @@ class FactorGrid(_Strict):
     readers: list[str]
     repetitions: int = Field(ge=1)
     provenance: list[ProvenanceMode] = ["off"]
+    fault_rates: list[float] = [0.0]
+
+    @model_validator(mode="after")
+    def _fault_rates_in_range(self) -> FactorGrid:
+        if any(not 0.0 <= r <= 1.0 for r in self.fault_rates):
+            raise ValueError("fault rates must be in [0, 1]")
+        return self
 
 
 class ProvenanceConfig(_Strict):
@@ -69,6 +77,7 @@ class ProvenanceConfig(_Strict):
 
     key_seed: str
     peer_party: str = "peer"
+    fault_mode: FaultMode = "missing"
 
 
 class PlanConfig(_Strict):
