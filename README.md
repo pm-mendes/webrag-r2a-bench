@@ -90,6 +90,7 @@ schemas/        run record schema (copy of the kit's; French field names by cont
 | [docs/freeze.md](docs/freeze.md) | freeze procedure, tags, deviations |
 | [docs/annotation.md](docs/annotation.md) | building, handing out and verifying the annotation batch |
 | [docs/aggregation.md](docs/aggregation.md) | from run records to the kit's MASTER_VALUES.json |
+| [docs/deployment.md](docs/deployment.md) | Docker image and vLLM services on the OVH machine |
 | [docs/operations.md](docs/operations.md) | configuring generators, running, resuming, pilot, troubleshooting |
 
 ## Contributing
