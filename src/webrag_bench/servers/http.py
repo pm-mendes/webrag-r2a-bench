@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from mcp.server.mcpserver import MCPServer
 
-from webrag_bench.corpus import NotInCorpus, WarcReplay
+from webrag_bench.corpus import NotInCorpusError, WarcReplay
 from webrag_bench.servers.journal import Journal
 
 
@@ -16,7 +16,7 @@ def http_server(journal: Journal, replay: WarcReplay) -> MCPServer:
         """Fetch a web page."""
         try:
             return replay.get(url)
-        except NotInCorpus:
+        except NotInCorpusError:
             return "ERROR 404: page not available"
 
     @server.tool()

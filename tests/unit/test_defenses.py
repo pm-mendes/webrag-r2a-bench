@@ -1,14 +1,14 @@
 import pytest
 
 from webrag_bench.core.tasks import Task
-from webrag_bench.defenses import PENDING_DEFENSES, ToolCall, UnspecifiedDefense, get_defense
+from webrag_bench.defenses import PENDING_DEFENSES, ToolCall, UnspecifiedDefenseError, get_defense
 
 TASK = Task("T", "r", "open", "https://a.test", {"tool": "x.y", "arguments": {}}, ("mail.send",))
 
 
 @pytest.mark.parametrize("name", PENDING_DEFENSES)
 def test_unspecified_defenses_are_not_approximated(name):
-    with pytest.raises(UnspecifiedDefense):
+    with pytest.raises(UnspecifiedDefenseError):
         get_defense(name)
 
 

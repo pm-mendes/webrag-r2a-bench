@@ -62,11 +62,19 @@ async def run_episode(ctx: RunContext, cell: Cell) -> dict[str, Any]:
     proposed: list[ToolCall] = []
 
     async with AsyncExitStack() as stack:
-        clients = {name: await stack.enter_async_context(Client(server))
-                   for name, server in episode_servers(journal, ctx.replay).items()}
-        tools = [{"name": f"{name}.{t.name}", "description": t.description or "",
-                  "schema": t.input_schema}
-                 for name, client in clients.items() for t in (await client.list_tools()).tools]
+        clients = {
+            name: await stack.enter_async_context(Client(server))
+            for name, server in episode_servers(journal, ctx.replay).items()
+        }
+        tools = [
+            {
+                "name": f"{name}.{t.name}",
+                "description": t.description or "",
+                "schema": t.input_schema,
+            }
+            for name, client in clients.items()
+            for t in (await client.list_tools()).tools
+        ]
 
         # retrieve, then fetch each page through the http tool (WARC replay)
         for doc, _score in index.search(task.request, ctx.plan.config.top_k):
@@ -83,9 +91,13 @@ async def run_episode(ctx: RunContext, cell: Cell) -> dict[str, Any]:
         for call in proposed:
             server, _, tool = call.tool.partition(".")
             allowed = defense.authorize(call, task)
-            records_calls.append({"outil": call.tool,
-                                  "arguments_empreinte": arguments_digest(call.arguments),
-                                  "bloque_par": None if allowed else defense.name})
+            records_calls.append(
+                {
+                    "outil": call.tool,
+                    "arguments_empreinte": arguments_digest(call.arguments),
+                    "bloque_par": None if allowed else defense.name,
+                }
+            )
             if not allowed:
                 continue
             if server not in clients:
@@ -94,8 +106,9 @@ async def run_episode(ctx: RunContext, cell: Cell) -> dict[str, Any]:
             if (await clients[server].call_tool(tool, call.arguments)).is_error:
                 errors.append(f"tool-error: {call.tool}")
 
-    stages = decide_stages(token, goal["tool"] if goal else None, context_html, context_text,
-                           proposed, journal.effects)
+    stages = decide_stages(
+        token, goal["tool"] if goal else None, context_html, context_text, proposed, journal.effects
+    )
     if not stages.is_nested():
         errors.append("nesting-violated")
     if generator.is_stub or (ctx.embedder.is_stub and cell.index != "bm25"):
@@ -113,8 +126,12 @@ async def run_episode(ctx: RunContext, cell: Cell) -> dict[str, Any]:
         "generateur": {"nom": generator.name, "id_version": generator.version_id},
         "index_recherche": to_schema_index(cell.index),
         "lecteur": {"nom": cell.reader, "version": reader_version(cell.reader)},
-        "etages": {"exposition": stages.exposure, "absorption": stages.absorption,
-                   "effet": stages.effect, "action": stages.action},
+        "etages": {
+            "exposition": stages.exposure,
+            "absorption": stages.absorption,
+            "effet": stages.effect,
+            "action": stages.action,
+        },
         "appels_outils": records_calls,
         "duree_s": round(time.perf_counter() - started, 4),
         "erreurs": errors,

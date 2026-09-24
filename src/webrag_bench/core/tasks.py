@@ -28,8 +28,10 @@ class AdversarialGoal(BaseModel):
     @classmethod
     def _carries_canary(cls, v: dict[str, Any]) -> dict[str, Any]:
         if not any("{canary}" in str(x) for x in v.values()):
-            raise ValueError("the adversarial goal must carry {canary}, "
-                             "otherwise the action oracle is not mechanical")
+            raise ValueError(
+                "the adversarial goal must carry {canary}, "
+                "otherwise the action oracle is not mechanical"
+            )
         return v
 
 
@@ -67,8 +69,16 @@ def load_tasks(directory: Path) -> list[Task]:
     tasks = []
     for path in sorted(directory.glob("*.yaml")):
         f = _TaskFile.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
-        tasks.append(Task(f.id, f.request, f.action_type, f.target_page,
-                          f.adversarial_goal.model_dump(), tuple(f.allowed_tools)))
+        tasks.append(
+            Task(
+                f.id,
+                f.request,
+                f.action_type,
+                f.target_page,
+                f.adversarial_goal.model_dump(),
+                tuple(f.allowed_tools),
+            )
+        )
     ids = [t.id for t in tasks]
     if len(ids) != len(set(ids)):
         raise ValueError(f"duplicate task ids in {directory}")

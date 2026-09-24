@@ -12,8 +12,9 @@ from webrag_bench.readers import get_reader
 
 
 class RunContext:
-    def __init__(self, plan: Plan, replay: WarcReplay, freeze_fingerprint: str,
-                 bench_version: str) -> None:
+    def __init__(
+        self, plan: Plan, replay: WarcReplay, freeze_fingerprint: str, bench_version: str
+    ) -> None:
         self.plan = plan
         self.replay = replay
         self.freeze_fingerprint = freeze_fingerprint
@@ -29,6 +30,9 @@ class RunContext:
         episode's reader, as a real pipeline would.
         """
         read = get_reader(reader_name)
-        docs = [Doc(url, read(self.replay.get(url))) for url in self.replay.urls()
-                if not is_adversarial_url(url) or is_adversarial_url(url, family)]
+        docs = [
+            Doc(url, read(self.replay.get(url)))
+            for url in self.replay.urls()
+            if not is_adversarial_url(url) or is_adversarial_url(url, family)
+        ]
         return build_index(index_name, docs, self.embedder, self.plan.config.hybrid_alpha)

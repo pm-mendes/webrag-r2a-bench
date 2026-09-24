@@ -14,6 +14,11 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 - `webrag-bench` CLI with `run`, `pilot` and `freeze-check` subcommands.
 - Pydantic validation of plan, task, template and corpus files.
 - Pilot plans are refused while a generator is left PENDING.
+- Quality tooling: ruff (lint and format), strict mypy, coverage, pre-commit hooks,
+  `Makefile` targets, and a GitHub Actions workflow (lint, types, tests on 3.12 and
+  3.13, dry run, campaign plan refusal).
+- Tests for the OpenAI-compatible client (model substitution detection, tool name
+  mapping), the three indexes, and resuming an interrupted plan.
 
 ### Changed
 - Code, identifiers, configuration, demo data and documentation are now in English.
@@ -23,6 +28,8 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
   `security`, `analysis`, `cli`, `config`).
 - Plans declare their grid as named `subplans`; `config/gel/` is now `config/frozen/`.
 - Tests split into `tests/unit/` and `tests/integration/`.
+- Exceptions renamed with an `Error` suffix (`ForbiddenConnectionError`,
+  `NotInCorpusError`, `UnspecifiedDefenseError`, `IncompleteFreezeError`).
 
 ## [0.1.0.dev0] - 2026-09-24
 

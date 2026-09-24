@@ -11,8 +11,14 @@ from webrag_bench.generators.stub import StubGenerator
 def build_generator(config: GeneratorConfig, seed: int | None = None) -> Generator:
     if config.type == "stub":
         return StubGenerator(config.name, config.version_id)
-    assert config.base_url  # enforced by GeneratorConfig
+    if not config.base_url:  # also enforced by GeneratorConfig
+        raise ValueError(f"generator {config.name}: base_url is required")
     return OpenAICompatibleGenerator(
-        config.name, config.version_id, config.base_url, config.key_env,
-        temperature=config.temperature, max_tokens=config.max_tokens, seed=seed,
+        config.name,
+        config.version_id,
+        config.base_url,
+        config.key_env,
+        temperature=config.temperature,
+        max_tokens=config.max_tokens,
+        seed=seed,
     )

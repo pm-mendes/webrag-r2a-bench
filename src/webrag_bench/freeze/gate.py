@@ -9,7 +9,7 @@ from webrag_bench.freeze.fingerprint import collect_files
 MARKERS = {"PENDING": "PENDING value", "status: DEMO": "DEMO element"}
 
 
-class IncompleteFreeze(RuntimeError):
+class IncompleteFreezeError(RuntimeError):
     pass
 
 
@@ -28,4 +28,6 @@ def blocking_markers(paths: list[Path]) -> list[str]:
 def require_complete_freeze(paths: list[Path], what: str = "campaign") -> None:
     markers = blocking_markers(paths)
     if markers:
-        raise IncompleteFreeze(f"{what} refused: unresolved elements.\n  " + "\n  ".join(markers))
+        raise IncompleteFreezeError(
+            f"{what} refused: unresolved elements.\n  " + "\n  ".join(markers)
+        )

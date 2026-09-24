@@ -1,7 +1,7 @@
 """WARC archive writer and offline replay.
 
 Every page read during an episode goes through `WarcReplay`. A URL missing from the
-archive raises `NotInCorpus`: there is no network fallback.
+archive raises `NotInCorpusError`: there is no network fallback.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from webrag_bench.corpus.pages import Page
 _FIXED_DATE = "2026-01-01T00:00:00Z"
 
 
-class NotInCorpus(KeyError):
+class NotInCorpusError(KeyError):
     pass
 
 
@@ -42,10 +42,14 @@ def write_warc(pages: list[Page], path: Path) -> str:
             "200 OK", [("Content-Type", "text/html; charset=utf-8")], protocol="HTTP/1.1"
         )
         record = writer.create_warc_record(
-            page.url, "response", payload=io.BytesIO(page.html.encode("utf-8")),
+            page.url,
+            "response",
+            payload=io.BytesIO(page.html.encode("utf-8")),
             http_headers=headers,
-            warc_headers_dict={"WARC-Date": _FIXED_DATE,
-                               "WARC-Record-ID": f"<urn:uuid:{_deterministic_uuid(page.url)}>"},
+            warc_headers_dict={
+                "WARC-Date": _FIXED_DATE,
+                "WARC-Record-ID": f"<urn:uuid:{_deterministic_uuid(page.url)}>",
+            },
         )
         writer.write_record(record)
     data = buffer.getvalue()
@@ -68,7 +72,9 @@ class WarcReplay:
         try:
             return self._pages[url]
         except KeyError:
-            raise NotInCorpus(f"{url} is not in the WARC archive (no network access)") from None
+            raise NotInCorpusError(
+                f"{url} is not in the WARC archive (no network access)"
+            ) from None
 
     def urls(self) -> list[str]:
         return sorted(self._pages)

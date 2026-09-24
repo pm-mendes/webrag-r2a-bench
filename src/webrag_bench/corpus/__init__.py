@@ -7,10 +7,10 @@ from webrag_bench.corpus.pages import (
     is_adversarial_url,
     load_benign_pages,
 )
-from webrag_bench.corpus.warc import NotInCorpus, WarcReplay, write_warc
+from webrag_bench.corpus.warc import NotInCorpusError, WarcReplay, write_warc
 
 __all__ = [
-    "NotInCorpus",
+    "NotInCorpusError",
     "Page",
     "WarcReplay",
     "adversarial_url",

@@ -8,7 +8,7 @@ from typing import Any
 from webrag_bench.core.tasks import Task
 
 
-class UnspecifiedDefense(NotImplementedError):
+class UnspecifiedDefenseError(NotImplementedError):
     """The defense is part of the frozen protocol but its configuration is not imported."""
 
 

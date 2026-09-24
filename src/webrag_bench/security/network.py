@@ -8,6 +8,7 @@ plan (API providers, the OVH machine).
 
 from __future__ import annotations
 
+import contextlib
 import ipaddress
 import socket
 from typing import Any
@@ -17,7 +18,7 @@ _ORIGINAL_CREATE_CONNECTION = socket.create_connection
 _allowed_hosts: set[str] = set()
 
 
-class ForbiddenConnection(RuntimeError):
+class ForbiddenConnectionError(RuntimeError):
     """Raised when code tries to reach a host that is not allowlisted."""
 
 
@@ -35,7 +36,7 @@ def _check(address: object) -> None:
         host = str(address[0])
         if _is_loopback(host) or host in _allowed_hosts:
             return
-        raise ForbiddenConnection(
+        raise ForbiddenConnectionError(
             f"outbound connection to {host!r} refused: not allowlisted "
             "(no third-party site is contacted; only declared model endpoints are)"
         )
@@ -46,10 +47,8 @@ def install_guard(allowed_hosts: set[str]) -> None:
     """Enable the guard. Host names are resolved once so that IPs match too."""
     resolved = set(allowed_hosts)
     for host in allowed_hosts:
-        try:
+        with contextlib.suppress(OSError):
             resolved.update(str(info[4][0]) for info in socket.getaddrinfo(host, None))
-        except OSError:
-            pass
     _allowed_hosts.clear()
     _allowed_hosts.update(resolved)
 
@@ -61,7 +60,7 @@ def install_guard(allowed_hosts: set[str]) -> None:
         _check(address)
         return _ORIGINAL_CREATE_CONNECTION(address, *args, **kwargs)
 
-    socket.socket.connect = connect  # type: ignore[method-assign]
+    socket.socket.connect = connect  # type: ignore[method-assign,assignment]
     socket.create_connection = create_connection
 
 

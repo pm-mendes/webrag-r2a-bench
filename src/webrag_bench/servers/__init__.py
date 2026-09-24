@@ -19,10 +19,17 @@ from webrag_bench.servers.mail import mail_server
 from webrag_bench.servers.memory import memory_server
 from webrag_bench.servers.peer import peer_server
 
-EFFECTFUL_TOOLS = frozenset({
-    "mail.send", "bank.transfer", "filesystem.write", "filesystem.delete",
-    "http.post", "memory.store", "peer.delegate",
-})
+EFFECTFUL_TOOLS = frozenset(
+    {
+        "mail.send",
+        "bank.transfer",
+        "filesystem.write",
+        "filesystem.delete",
+        "http.post",
+        "memory.store",
+        "peer.delegate",
+    }
+)
 """Tools whose call produces a real effect, and can therefore reach the action stage."""
 
 
