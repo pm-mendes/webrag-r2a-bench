@@ -16,6 +16,7 @@ from webrag_bench.provenance.attestation import Attestation, issue, verify, veri
 from webrag_bench.provenance.canonical import canonical_json, digest
 from webrag_bench.provenance.keys import KeyRegistry, PartyKey
 from webrag_bench.provenance.mcp_transport import META_KEY, attach, extract
+from webrag_bench.provenance.meter import ProvenanceMeter
 from webrag_bench.provenance.prov import to_prov_jsonld
 
 __all__ = [
@@ -23,6 +24,7 @@ __all__ = [
     "Attestation",
     "KeyRegistry",
     "PartyKey",
+    "ProvenanceMeter",
     "attach",
     "canonical_json",
     "digest",

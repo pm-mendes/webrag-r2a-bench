@@ -18,5 +18,7 @@ def test_signed_episodes_verify_every_page(tmp_path):
         if cell.provenance == "on":
             assert m["pages"]
             assert all(p["attested"] and p["verified"] for p in m["pages"])
+            assert m["cost"]["attestations"] >= len(m["pages"])
+            assert m["cost"]["meta_bytes"] > 0
         else:
             assert m["pages"] == []
