@@ -1,4 +1,5 @@
-"""State shared by the episodes of one worker: plan, archive, cached indexes."""
+"""State shared by the episodes of one worker: plan, archive, cached indexes, and —
+for plans with signed provenance — the party keys and the public-key registry."""
 
 from __future__ import annotations
 
@@ -8,7 +9,9 @@ from webrag_bench.core.plan import Plan
 from webrag_bench.core.tasks import Task
 from webrag_bench.corpus import WarcReplay, is_adversarial_url
 from webrag_bench.index import Doc, Index, build_embedder, build_index
+from webrag_bench.provenance import KeyRegistry, PartyKey
 from webrag_bench.readers import get_reader
+from webrag_bench.servers.signing import origin_of, party_keys
 
 
 class RunContext:
@@ -22,6 +25,12 @@ class RunContext:
         self.tasks: dict[str, Task] = {t.id: t for t in plan.tasks()}
         self.embedder = build_embedder(plan.config.embedder)
         self.index = lru_cache(maxsize=64)(self._build_index)
+        self.party_keys: dict[str, PartyKey] = {}
+        self.registry = KeyRegistry()
+        prov = plan.config.provenance
+        if prov is not None:
+            origins = [origin_of(u) for u in replay.urls()]
+            self.party_keys, self.registry = party_keys([*origins, prov.peer_party], prov.key_seed)
 
     def _build_index(self, family: str, reader_name: str, index_name: str) -> Index:
         """Index of the corpus as published for one attack family.

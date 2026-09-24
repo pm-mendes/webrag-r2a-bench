@@ -36,8 +36,15 @@ class Cell:
     index: str
     reader: str
     repetition: int
+    provenance: str = "off"
 
     def key(self) -> str:
+        # factors added after P are appended only when not at their default value,
+        # so that the episode ids of existing plans do not change
+        extra = "" if self.provenance == "off" else f"|prov={self.provenance}"
+        return self._base_key() + extra
+
+    def _base_key(self) -> str:
         return "|".join(
             map(
                 str,
@@ -82,7 +89,7 @@ class Plan:
             unknown = set(tasks) - known
             if unknown:
                 raise ValueError(f"subplan {name}: unknown tasks {sorted(unknown)}")
-            for task, family, defense, generator, index, reader, rep in itertools.product(
+            for task, family, defense, generator, index, reader, rep, prov in itertools.product(
                 tasks,
                 grid.families,
                 grid.defenses,
@@ -90,8 +97,9 @@ class Plan:
                 grid.indexes,
                 grid.readers,
                 range(grid.repetitions),
+                grid.provenance,
             ):
-                cells.append(Cell(name, task, family, defense, generator, index, reader, rep))
+                cells.append(Cell(name, task, family, defense, generator, index, reader, rep, prov))
         return cells
 
     def episode_id_and_seed(self, cell: Cell) -> tuple[str, int]:

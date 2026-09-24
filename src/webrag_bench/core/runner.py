@@ -1,6 +1,6 @@
 """Runner: builds the archive, fingerprints the freeze, runs the cells, writes JSONL.
 
-Output goes to runs/<plan>/: `episodes.jsonl`, `transcripts.jsonl`,
+Output goes to runs/<plan>/: `episodes.jsonl`, `transcripts.jsonl`, `measures.jsonl`,
 `failures.jsonl`, `freeze.json`, `corpus.warc`. A rerun resumes where it stopped:
 episode ids are deterministic and episodes already written are skipped.
 """
@@ -107,6 +107,7 @@ def run_plan(
     prepared = prepare(plan, ROOT / "runs" / plan.name)
     episodes = prepared.output_dir / "episodes.jsonl"
     transcripts = prepared.output_dir / "transcripts.jsonl"
+    measures = prepared.output_dir / "measures.jsonl"
     failures = prepared.output_dir / "failures.jsonl"
 
     cells = plan.cells()
@@ -125,6 +126,7 @@ def run_plan(
             if isinstance(result, EpisodeResult):
                 # transcript first: a record never exists without its transcript
                 _append_json(result.transcript, transcripts)
+                _append_json(result.measures, measures)
                 append_record(result.record, episodes)
                 written += 1
             else:

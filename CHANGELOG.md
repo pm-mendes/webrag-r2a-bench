@@ -8,6 +8,9 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Paper Y: `provenance: [off, on]` factor. With `on`, pages and the peer agent are
+  served by signing servers and the agent verifies each attestation; results go to a
+  new `measures.jsonl` beside the records. `y-dry-run` plan. P episode ids unchanged.
 - Signed cross-party provenance for paper Y (first block): deterministic Ed25519 party
   keys, attestations with derivation chains, verification, PROV-O JSON-LD export,
   transport in MCP result `_meta`, signing http and peer servers. Not wired into

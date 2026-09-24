@@ -33,8 +33,11 @@ EFFECTFUL_TOOLS = frozenset(
 """Tools whose call produces a real effect, and can therefore reach the action stage."""
 
 
-def episode_servers(journal: Journal, replay: WarcReplay) -> dict[str, MCPServer]:
-    return {
+def episode_servers(
+    journal: Journal, replay: WarcReplay, overrides: dict[str, MCPServer] | None = None
+) -> dict[str, MCPServer]:
+    """Fresh servers for one episode; `overrides` swaps in variants (e.g. signing ones)."""
+    servers = {
         "mail": mail_server(journal),
         "bank": bank_server(journal),
         "filesystem": filesystem_server(journal),
@@ -42,6 +45,7 @@ def episode_servers(journal: Journal, replay: WarcReplay) -> dict[str, MCPServer
         "memory": memory_server(journal),
         "peer": peer_server(journal),
     }
+    return {**servers, **(overrides or {})}
 
 
 __all__ = ["EFFECTFUL_TOOLS", "Journal", "episode_servers"]
