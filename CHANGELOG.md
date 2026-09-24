@@ -8,6 +8,9 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Campaign monitoring (`webrag-bench status`): progress, measured throughput over the
+  last hour, projected end against a deadline, anomalies (model substitution, tool
+  errors, failures), and a Markdown checkpoint report.
 - Aggregation into the kit's MASTER_VALUES format (`webrag-bench aggregate`, and
   `pilot --master`): funnel counts per cell with n_X / n_E as the end-to-end rate,
   reader factor, per-defense stage counts, WARC fingerprint. Refuses to write numbers

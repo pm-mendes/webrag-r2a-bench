@@ -6,6 +6,7 @@ webrag-bench freeze-check config/plans/campaign-p.yaml
 webrag-bench annotation build config/annotation/demo-batch.yaml
 webrag-bench annotation verify runs/demo-factors/annotation/demo-batch
 webrag-bench aggregate runs/campaign-p --master <kit>/MASTER_VALUES.json
+webrag-bench status config/plans/campaign-p.yaml --deadline 2026-09-27T16:00
 """
 
 from __future__ import annotations
@@ -125,6 +126,26 @@ def _cmd_aggregate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_status(args: argparse.Namespace) -> int:
+    from datetime import UTC, datetime
+
+    from webrag_bench.analysis.monitor import campaign_status, render_report
+
+    try:
+        status = campaign_status(args.plan)
+    except IncompleteFreezeError as e:
+        print(e, file=sys.stderr)
+        return 3
+    deadline = datetime.fromisoformat(args.deadline) if args.deadline else None
+    if deadline is not None and deadline.tzinfo is None:
+        deadline = deadline.replace(tzinfo=UTC)
+    report = render_report(status, deadline, datetime.now(UTC))
+    print(report)
+    if args.report:
+        args.report.write_text(report, encoding="utf-8")
+    return 0
+
+
 def _cmd_annotation_build(args: argparse.Namespace) -> int:
     from webrag_bench.annotation import BatchError, build_batch, load_batch_config
 
@@ -200,6 +221,12 @@ def build_parser() -> argparse.ArgumentParser:
     check = sub.add_parser("freeze-check", help="check that a plan can enter the campaign")
     check.add_argument("plan", type=Path)
     check.set_defaults(func=_cmd_freeze_check)
+
+    status = sub.add_parser("status", help="progress, throughput and projected end of a plan")
+    status.add_argument("plan", type=Path)
+    status.add_argument("--deadline", help="ISO date-time; UTC unless an offset is given")
+    status.add_argument("--report", type=Path, help="also write the report to this file")
+    status.set_defaults(func=_cmd_status)
 
     annotation = sub.add_parser("annotation", help="build or verify an annotation batch")
     annotation_sub = annotation.add_subparsers(dest="annotation_command", required=True)
