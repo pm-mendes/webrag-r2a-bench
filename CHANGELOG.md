@@ -8,6 +8,10 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Aggregation into the kit's MASTER_VALUES format (`webrag-bench aggregate`, and
+  `pilot --master`): funnel counts per cell with n_X / n_E as the end-to-end rate,
+  reader factor, per-defense stage counts, WARC fingerprint. Refuses to write numbers
+  from stub, unfrozen, mixed or untagged runs.
 - Episode transcripts (`transcripts.jsonl`): what the generator saw and proposed,
   stored beside the run records (outside the schema).
 - Annotation batch builder: stratified, blinded, deterministic, frozen by SHA-256

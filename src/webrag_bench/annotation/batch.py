@@ -29,8 +29,8 @@ from typing import Any
 
 from webrag_bench import ROOT
 from webrag_bench.annotation.config import BatchConfig
-from webrag_bench.annotation.strata import stratum_of
 from webrag_bench.core.versioning import bench_version
+from webrag_bench.records.fields import key_of as stratum_of
 
 ANNOTATOR_FILES = ("items.jsonl", "sheet.csv", "instructions.md")
 SEALED_FILES = ("key.jsonl",)
