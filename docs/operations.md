@@ -40,6 +40,19 @@ episodes are skipped. Failed episodes are retried, since they are not in
 On a remote machine, run inside `tmux` or `nohup` so that a dropped SSH session does
 not stop the campaign.
 
+## Monitoring and checkpoints
+
+```bash
+uv run webrag-bench status config/plans/campaign-p.yaml --deadline 2026-09-27T18:00+02:00
+uv run webrag-bench status config/plans/campaign-p.yaml --deadline ... --report checkpoint.md
+```
+
+Safe to run while the campaign writes (files are append-only). The report gives
+progress, failures to retry, the throughput **measured over the last hour**, the
+projected end, and a verdict against the deadline. A late verdict means the fallback
+rule applies in its declared order; a `model-substitution` anomaly means a deviation
+must be recorded before going on.
+
 ## Pilot
 
 ```bash
