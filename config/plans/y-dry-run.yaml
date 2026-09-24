@@ -1,0 +1,25 @@
+# Paper Y dry run: the same cells with signed provenance off and on.
+# STUB generator and embedder, DEMO tasks and templates: checks the wiring only.
+name: y-dry-run
+status: DEMO
+canary_salt: y-dry-run-v1
+corpus: corpus
+attacks_dir: config/demo/attacks
+tasks_dir: config/demo/tasks
+top_k: 3
+hybrid_alpha: 0.5
+embedder: {type: stub}
+generators:
+  - {name: stub, type: stub, version_id: stub-0}
+provenance:
+  key_seed: y-dry-run-keys-v1
+subplans:
+  main:
+    tasks: all
+    families: [none, F1]
+    defenses: [none]
+    generators: [stub]
+    indexes: [bm25]
+    readers: [bs4-text]
+    repetitions: 1
+    provenance: ["off", "on"]

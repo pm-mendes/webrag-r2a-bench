@@ -10,6 +10,14 @@ from webrag_bench.config.models import (
     GeneratorConfig,
     PlanConfig,
     PlanStatus,
+    ProvenanceConfig,
 )
 
-__all__ = ["EmbedderConfig", "FactorGrid", "GeneratorConfig", "PlanConfig", "PlanStatus"]
+__all__ = [
+    "EmbedderConfig",
+    "FactorGrid",
+    "GeneratorConfig",
+    "PlanConfig",
+    "PlanStatus",
+    "ProvenanceConfig",
+]

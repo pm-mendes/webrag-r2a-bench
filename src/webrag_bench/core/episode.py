@@ -5,9 +5,13 @@ calls, which go through the defense before reaching the sandbox servers. (A
 multi-turn agent is a possible extension; it is not needed to measure the four
 stages.)
 
-Each episode yields a run record (the schema's contract, digests only) and a
-transcript (what the generator saw and said). Transcripts are stored beside the
-records and feed the annotation batch; they are not part of the schema.
+Each episode yields a run record (the schema's contract, digests only), a transcript
+(what the generator saw and said) and measures (quantities outside the schema, e.g.
+signed provenance for paper Y). Transcripts and measures are stored beside the
+records; they are not part of the schema.
+
+With provenance `on`, pages and the peer agent are served by signing servers and the
+agent verifies every attestation it receives.
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ from webrag_bench.core.plan import Cell
 from webrag_bench.defenses import ToolCall, get_defense
 from webrag_bench.generators import build_generator
 from webrag_bench.oracles import decide_stages
+from webrag_bench.provenance import extract, verify
 from webrag_bench.readers import get_reader, reader_version
 from webrag_bench.records import (
     arguments_digest,
@@ -35,6 +40,7 @@ from webrag_bench.records import (
     to_schema_index,
 )
 from webrag_bench.servers import Journal, episode_servers
+from webrag_bench.servers.signing import origin_of, signed_http_server, signed_peer_server
 
 SYSTEM_PROMPT = (
     "You are an assistant that helps the user using web pages. "
@@ -46,6 +52,7 @@ SYSTEM_PROMPT = (
 class EpisodeResult:
     record: dict[str, Any]
     transcript: dict[str, Any]
+    measures: dict[str, Any]
 
 
 def _text(result: Any) -> str:
@@ -71,11 +78,23 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
     context_html: list[str] = []
     context_text: list[str] = []
     proposed: list[ToolCall] = []
+    signed = cell.provenance == "on"
+    page_provenance: list[dict[str, Any]] = []
+
+    overrides = {}
+    if signed:
+        prov = ctx.plan.config.provenance
+        if prov is None:  # also enforced by PlanConfig
+            raise ValueError("provenance 'on' needs a provenance section in the plan")
+        overrides = {
+            "http": signed_http_server(journal, ctx.replay, ctx.party_keys),
+            "peer": signed_peer_server(journal, ctx.party_keys[prov.peer_party]),
+        }
 
     async with AsyncExitStack() as stack:
         clients = {
             name: await stack.enter_async_context(Client(server))
-            for name, server in episode_servers(journal, ctx.replay).items()
+            for name, server in episode_servers(journal, ctx.replay, overrides).items()
         }
         tools = [
             {
@@ -89,7 +108,19 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
 
         # retrieve, then fetch each page through the http tool (WARC replay)
         for doc, _score in index.search(task.request, ctx.plan.config.top_k):
-            html = _text(await clients["http"].call_tool("get", {"url": doc.url}))
+            result = await clients["http"].call_tool("get", {"url": doc.url})
+            html = _text(result)
+            if signed:
+                attestation = extract(result)
+                problems = verify(attestation, ctx.registry, output=html) if attestation else []
+                page_provenance.append(
+                    {
+                        "origin": origin_of(doc.url),
+                        "attested": attestation is not None,
+                        "verified": attestation is not None and not problems,
+                        "problems": problems,
+                    }
+                )
             context_html.append(html)
             context_text.append(read(html))
         context_text = defense.filter_context(context_text)
@@ -156,4 +187,11 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
         "response_text": response.text,
         "proposed_calls": [{"tool": c.tool, "arguments": c.arguments} for c in proposed],
     }
-    return EpisodeResult(record, transcript)
+    measures = {
+        "id_episode": episode_id,
+        "provenance": {
+            "mode": cell.provenance,
+            "pages": page_provenance,
+        },
+    }
+    return EpisodeResult(record, transcript, measures)

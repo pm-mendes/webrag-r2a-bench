@@ -8,6 +8,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Family = Literal["none", "F1", "F2", "F3", "F4"]
+ProvenanceMode = Literal["off", "on"]
 IndexName = Literal["dense", "bm25", "hybrid"]
 
 
@@ -60,6 +61,14 @@ class FactorGrid(_Strict):
     indexes: list[IndexName]
     readers: list[str]
     repetitions: int = Field(ge=1)
+    provenance: list[ProvenanceMode] = ["off"]
+
+
+class ProvenanceConfig(_Strict):
+    """Signed provenance (paper Y): who signs, with keys derived from a frozen seed."""
+
+    key_seed: str
+    peer_party: str = "peer"
 
 
 class PlanConfig(_Strict):
@@ -76,6 +85,7 @@ class PlanConfig(_Strict):
     embedder: EmbedderConfig
     generators: list[GeneratorConfig]
     subplans: dict[str, FactorGrid]
+    provenance: ProvenanceConfig | None = None
 
     @model_validator(mode="after")
     def _generators_declared(self) -> PlanConfig:
@@ -84,6 +94,15 @@ class PlanConfig(_Strict):
             missing = set(grid.generators) - declared
             if missing:
                 raise ValueError(f"subplan {name}: undeclared generators {sorted(missing)}")
+        return self
+
+    @model_validator(mode="after")
+    def _provenance_configured(self) -> PlanConfig:
+        uses = any("on" in grid.provenance for grid in self.subplans.values())
+        if uses and self.provenance is None:
+            raise ValueError(
+                "a subplan uses provenance 'on' but the plan has no provenance section"
+            )
         return self
 
     def generator(self, name: str) -> GeneratorConfig:
