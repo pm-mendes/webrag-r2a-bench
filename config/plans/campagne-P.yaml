@@ -1,0 +1,17 @@
+# CAMPAGNE P — squelette. Le runner REFUSE de la lancer tant qu'un PENDING ou un
+# élément DEMO subsiste ici ou dans ce que le plan référence (config/gel/, corpus).
+# La grille doit se décomposer en sous-plans dont la somme vaut exactement le total
+# du PLAN_MANIFEST.json (69 036 aujourd'hui, non réconcilié).
+nom: campagne-P
+statut: GELE
+sel_canari: "PENDING — tiré au gel"
+corpus: corpus
+config_attaques: config/gel/attaques
+config_taches: config/gel/taches
+config_defenses: config/gel/defenses
+config_juge: config/gel/juge
+top_k: "PENDING"
+alpha_hybride: "PENDING"
+embedder: {type: openai-compatible, base_url: "PENDING", modele: "PENDING"}
+generateurs: "PENDING — les quatre instantanés figés"
+sous_plans: "PENDING — décomposition de la grille (voir PLAN_MANIFEST.json, reconciliation_grille)"

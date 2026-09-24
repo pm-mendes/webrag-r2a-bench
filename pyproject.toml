@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "webrag-r2a-bench"
+version = "0.1.0.dev0"
+description = "Banc de mesure retrieval -> action pour l'injection de prompt dans le RAG agentique web (chantiers 07-TWEB-R2A / 08-TWEB-PBD)"
+requires-python = ">=3.12"
+dependencies = [
+  "mcp>=2.2,<3",
+  "rank-bm25>=0.2",
+  "numpy>=1.26",
+  "jsonschema>=4.20",
+  "warcio>=1.7",
+  "beautifulsoup4>=4.12",
+  "html2text>=2024.2",
+  "trafilatura>=1.9",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+webrag-bench = "webrag_bench.runner:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

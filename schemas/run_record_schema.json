@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run_record_schema.json",
+  "title": "Enregistrement d'exécution — webrag-r2a-bench",
+  "description": "Un objet par épisode. Les oracles sont mécaniques : aucun champ n'est rempli par jugement humain à l'exécution. Le juge LLM intervient en aval, sur le lot d'annotation, et sa sortie est un champ distinct.",
+  "type": "object",
+  "required": [
+    "id_episode", "horodatage_utc", "graine", "version_banc", "empreinte_gel",
+    "tache", "famille_attaque", "condition_defense", "generateur", "index_recherche",
+    "lecteur", "etages", "appels_outils", "duree_s"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id_episode": {"type": "string", "description": "identifiant stable, reproductible depuis (graine, cellule)"},
+    "horodatage_utc": {"type": "string", "format": "date-time"},
+    "graine": {"type": "integer"},
+    "version_banc": {"type": "string", "description": "tag git du banc"},
+    "empreinte_gel": {"type": "string", "description": "SHA-256 de l'ensemble gelé ; permet de prouver qu'aucun gabarit n'a bougé"},
+    "tache": {
+      "type": "object",
+      "required": ["id", "type_action"],
+      "properties": {
+        "id": {"type": "string"},
+        "type_action": {"type": "string", "enum": ["action-open", "action-specifiee"],
+          "description": "partition ajoutée le 18/09 : l'étage action se comporte différemment selon que la requête délègue l'action au contenu ou la spécifie"}
+      }
+    },
+    "famille_attaque": {"type": "string", "enum": ["F1", "F2", "F3", "F4", "aucune"]},
+    "condition_defense": {"type": "string"},
+    "generateur": {
+      "type": "object",
+      "required": ["nom", "id_version"],
+      "properties": {"nom": {"type": "string"}, "id_version": {"type": "string"}},
+      "description": "id_version obligatoire : une substitution silencieuse de modèle ou de fournisseur est ainsi détectable a posteriori"
+    },
+    "index_recherche": {"type": "string", "enum": ["dense", "bm25", "hybride"]},
+    "lecteur": {
+      "type": "object",
+      "required": ["nom", "version"],
+      "properties": {"nom": {"type": "string"}, "version": {"type": "string"}}
+    },
+    "etages": {
+      "type": "object",
+      "description": "Les quatre étages emboîtés, chacun tranché par un oracle mécanique. L'emboîtement action ⊆ effet ⊆ absorption ⊆ exposition est un invariant contrôlé.",
+      "required": ["exposition", "absorption", "effet", "action"],
+      "properties": {
+        "exposition": {"type": "boolean", "description": "le passage adverse est-il entré dans le contexte du générateur"},
+        "absorption": {"type": "boolean", "description": "le contenu adverse a-t-il survécu au lecteur et au contexte"},
+        "effet": {"type": "boolean", "description": "le générateur a-t-il produit la sortie voulue par l'adversaire"},
+        "action": {"type": "boolean", "description": "un appel d'outil à effet réel a-t-il été émis"}
+      }
+    },
+    "appels_outils": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["outil", "arguments_empreinte", "bloque_par"],
+        "properties": {
+          "outil": {"type": "string"},
+          "arguments_empreinte": {"type": "string"},
+          "bloque_par": {"type": ["string", "null"], "description": "condition de défense ayant bloqué l'appel, ou null"}
+        }
+      }
+    },
+    "duree_s": {"type": "number", "description": "alimente la médiane du pilote, jamais une hypothèse"},
+    "erreurs": {"type": "array", "items": {"type": "string"}},
+    "deviation_consignee": {"type": ["string", "null"], "description": "référence à une entrée de DEVIATIONS.md si cet épisode a tourné hors protocole"}
+  }
+}

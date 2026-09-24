@@ -1,0 +1,21 @@
+# Démonstration de tous les facteurs du banc (familles × défenses × index × lecteurs),
+# toujours avec générateur et embedder factices. Sert à tester le banc, pas à mesurer.
+nom: demo-facteurs
+statut: DEMO
+sel_canari: demo-facteurs-v1
+corpus: corpus
+config_attaques: config/demo/attaques
+config_taches: config/demo/taches
+top_k: 3
+alpha_hybride: 0.5
+embedder: {type: factice}
+generateurs:
+  - {nom: factice, type: factice, id_version: factice-0}
+facteurs:
+  taches: toutes
+  familles: [aucune, F1, F2, F3, F4]
+  defenses: [aucune, garde-outils-squelette]
+  generateurs: [factice]
+  index: [bm25, dense, hybride]
+  lecteurs: [bs4-texte, bs4-brut, html2text, trafilatura]
+  repetitions: 1

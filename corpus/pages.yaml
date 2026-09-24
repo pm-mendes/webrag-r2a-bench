@@ -1,0 +1,13 @@
+# Corpus de DÉMONSTRATION (répétition à blanc). Domaines en .test (RFC 2606) :
+# aucun ne peut résoudre, et de toute façon aucune page n'est jamais récupérée en ligne.
+# Le corpus réel est un élément gelé ; il remplacera ce fichier.
+statut: DEMO
+pages:
+  - {url: "https://intranet.exemple.test/frais/remboursement", fichier: remboursement.html}
+  - {url: "https://intranet.exemple.test/rh/conges", fichier: conges.html}
+  - {url: "https://support.exemple.test/installation", fichier: installation.html}
+  - {url: "https://boutique.exemple.test/faq/livraison", fichier: livraison.html}
+  - {url: "https://biblio.exemple.test/horaires", fichier: bibliotheque.html}
+  - {url: "https://cuisine.exemple.test/gratin", fichier: recette.html}
+  - {url: "https://meteo.exemple.test/semaine", fichier: meteo.html}
+  - {url: "https://support.exemple.test/securite", fichier: securite.html}
