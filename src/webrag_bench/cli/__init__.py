@@ -5,6 +5,7 @@ webrag-bench pilot runs/pilot/episodes.jsonl --window-h 72
 webrag-bench freeze-check config/plans/campaign-p.yaml
 webrag-bench annotation build config/annotation/demo-batch.yaml
 webrag-bench annotation verify runs/demo-factors/annotation/demo-batch
+webrag-bench aggregate runs/campaign-p --master <kit>/MASTER_VALUES.json
 """
 
 from __future__ import annotations
@@ -47,6 +48,21 @@ def _cmd_pilot(args: argparse.Namespace) -> int:
         )
     median = report.median
     print(f"\noverall median: {median:.2f} s/episode")
+    if args.master:
+        from webrag_bench.analysis import (
+            AggregationError,
+            load_run,
+            merge_into_master,
+            pilot_values,
+        )
+
+        try:
+            values = pilot_values(load_run(args.jsonl.parent), args.window_h, args.workers)
+        except AggregationError as e:
+            print(e, file=sys.stderr)
+            return 3
+        written = merge_into_master(args.master, {"pilote": values})
+        print(f"wrote {len(written)} pilot value(s) into {args.master}")
     targets = {**CAMPAIGN_EPISODES, "P+Y (shared machine)": sum(CAMPAIGN_EPISODES.values())}
     for paper, n in targets.items():
         be = break_even_seconds(n, args.workers, args.window_h)
@@ -68,6 +84,44 @@ def _cmd_freeze_check(args: argparse.Namespace) -> int:
         f"{plan.name}: status {plan.config.status.value}, {len(plan.cells())} cells"
         + (" - freeze complete" if plan.is_frozen else " - not a frozen plan")
     )
+    return 0
+
+
+def _cmd_aggregate(args: argparse.Namespace) -> int:
+    from webrag_bench.analysis import (
+        AggregationError,
+        campaign_fragment,
+        check_publishable,
+        load_run,
+        merge_into_master,
+    )
+
+    try:
+        run = load_run(args.run)
+        fragment = campaign_fragment(run, args.run, args.cells.split(","))
+    except AggregationError as e:
+        print(e, file=sys.stderr)
+        return 3
+    out = args.run / "master_values_fragment.json"
+    out.write_text(json.dumps(fragment, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    prov = fragment["_provenance"]
+    print(
+        f"{prov['episodes']} episodes aggregated ({prov['excluded_nesting_violations']} "
+        f"nesting violation(s) excluded) -> {out}"
+    )
+    for name, cell in fragment["entonnoir"]["cellules"].items():
+        print(
+            f"  {name:40s} N={cell['N']:5d} E={cell['n_E']:5d} A={cell['n_A']:5d} "
+            f"F={cell['n_F']:5d} X={cell['n_X']:5d}"
+        )
+    if args.master:
+        try:
+            check_publishable(run)
+        except AggregationError as e:
+            print(e, file=sys.stderr)
+            return 3
+        written = merge_into_master(args.master, fragment)
+        print(f"wrote {', '.join(written)} into {args.master}")
     return 0
 
 
@@ -124,7 +178,24 @@ def build_parser() -> argparse.ArgumentParser:
     pilot.add_argument(
         "--window-h", type=float, required=True, help="remaining campaign window (hours)"
     )
+    pilot.add_argument(
+        "--master", type=Path, help="write the pilote section of this MASTER_VALUES.json"
+    )
     pilot.set_defaults(func=_cmd_pilot)
+
+    aggregate = sub.add_parser(
+        "aggregate", help="per-cell counts in the kit's MASTER_VALUES format"
+    )
+    aggregate.add_argument("run", type=Path, help="run directory, e.g. runs/campaign-p")
+    aggregate.add_argument(
+        "--cells",
+        default="family,defense",
+        help="grouping keys of a funnel cell (default: family,defense)",
+    )
+    aggregate.add_argument(
+        "--master", type=Path, help="merge into this MASTER_VALUES.json (frozen, tagged runs only)"
+    )
+    aggregate.set_defaults(func=_cmd_aggregate)
 
     check = sub.add_parser("freeze-check", help="check that a plan can enter the campaign")
     check.add_argument("plan", type=Path)

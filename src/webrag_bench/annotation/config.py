@@ -40,7 +40,7 @@ class BatchConfig(BaseModel):
 
     @model_validator(mode="after")
     def _known_strata(self) -> BatchConfig:
-        from webrag_bench.annotation.strata import STRATUM_KEYS
+        from webrag_bench.records.fields import RECORD_KEYS as STRATUM_KEYS
 
         unknown = set(self.strata) - set(STRATUM_KEYS)
         if unknown:

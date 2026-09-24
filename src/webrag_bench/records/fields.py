@@ -1,4 +1,5 @@
-"""Stratum keys, read from run records (schema field names)."""
+"""Grouping keys read from run records (schema field names), shared by the
+annotation batch (strata) and the aggregation (cells)."""
 
 from __future__ import annotations
 
@@ -7,7 +8,7 @@ from typing import Any
 
 Record = dict[str, Any]
 
-STRATUM_KEYS: dict[str, Callable[[Record], str]] = {
+RECORD_KEYS: dict[str, Callable[[Record], str]] = {
     "family": lambda r: r["famille_attaque"],
     "defense": lambda r: r["condition_defense"],
     "defense_on": lambda r: "off" if r["condition_defense"] == "none" else "on",
@@ -19,5 +20,5 @@ STRATUM_KEYS: dict[str, Callable[[Record], str]] = {
 }
 
 
-def stratum_of(record: Record, keys: list[str]) -> tuple[str, ...]:
-    return tuple(STRATUM_KEYS[k](record) for k in keys)
+def key_of(record: Record, keys: list[str]) -> tuple[str, ...]:
+    return tuple(RECORD_KEYS[k](record) for k in keys)

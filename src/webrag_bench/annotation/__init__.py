@@ -8,7 +8,7 @@ Once written, a batch is never rebuilt or edited: `verify_batch` detects any cha
 
 from webrag_bench.annotation.batch import BatchError, build_batch, verify_batch
 from webrag_bench.annotation.config import Allocation, BatchConfig, load_batch_config
-from webrag_bench.annotation.strata import STRATUM_KEYS
+from webrag_bench.records.fields import RECORD_KEYS as STRATUM_KEYS
 
 __all__ = [
     "STRATUM_KEYS",
