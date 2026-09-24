@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "webrag-r2a-bench: a staged measurement bench for retrieval-to-action prompt injection in web-native agentic RAG"
+type: software
+authors:
+  - family-names: Mendes
+    given-names: Pedro
+    affiliation: "CEDRIC, Conservatoire national des arts et métiers (Cnam), Paris"
+license: MIT
+repository-code: "https://github.com/pm-mendes/webrag-r2a-bench"
+version: 0.1.0.dev0
+# doi: added at the public release of the reproducibility package
