@@ -81,6 +81,15 @@ corpus/         DEMO page corpus
 schemas/        run record schema (copy of the kit's; French field names by contract)
 ```
 
+## Documentation
+
+| Page | Content |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | episode sequence, packages, dependency direction, extension points |
+| [docs/protocol.md](docs/protocol.md) | how stages and factors map to the manuscripts — what is still to check |
+| [docs/freeze.md](docs/freeze.md) | freeze procedure, tags, deviations |
+| [docs/operations.md](docs/operations.md) | configuring generators, running, resuming, pilot, troubleshooting |
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the branching model, commit conventions
