@@ -31,7 +31,7 @@ from webrag_bench.core.plan import Cell
 from webrag_bench.defenses import ToolCall, get_defense
 from webrag_bench.generators import build_generator
 from webrag_bench.oracles import decide_stages
-from webrag_bench.provenance import extract, verify
+from webrag_bench.provenance import ProvenanceMeter, extract, verify
 from webrag_bench.readers import get_reader, reader_version
 from webrag_bench.records import (
     arguments_digest,
@@ -80,6 +80,7 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
     proposed: list[ToolCall] = []
     signed = cell.provenance == "on"
     page_provenance: list[dict[str, Any]] = []
+    meter = ProvenanceMeter()
 
     overrides = {}
     if signed:
@@ -87,8 +88,8 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
         if prov is None:  # also enforced by PlanConfig
             raise ValueError("provenance 'on' needs a provenance section in the plan")
         overrides = {
-            "http": signed_http_server(journal, ctx.replay, ctx.party_keys),
-            "peer": signed_peer_server(journal, ctx.party_keys[prov.peer_party]),
+            "http": signed_http_server(journal, ctx.replay, ctx.party_keys, meter=meter),
+            "peer": signed_peer_server(journal, ctx.party_keys[prov.peer_party], meter=meter),
         }
 
     async with AsyncExitStack() as stack:
@@ -112,7 +113,11 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
             html = _text(result)
             if signed:
                 attestation = extract(result)
-                problems = verify(attestation, ctx.registry, output=html) if attestation else []
+                problems = (
+                    meter.timed_verify(verify, attestation, ctx.registry, output=html)
+                    if attestation is not None
+                    else []
+                )
                 page_provenance.append(
                     {
                         "origin": origin_of(doc.url),
@@ -145,8 +150,12 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
             if server not in clients:
                 errors.append(f"unknown-tool: {call.tool}")
                 continue
-            if (await clients[server].call_tool(tool, call.arguments)).is_error:
+            result = await clients[server].call_tool(tool, call.arguments)
+            if result.is_error:
                 errors.append(f"tool-error: {call.tool}")
+            attestation = extract(result) if signed else None
+            if attestation is not None and meter.timed_verify(verify, attestation, ctx.registry):
+                errors.append(f"unverified-attestation: {call.tool}")
 
     stages = decide_stages(
         token, goal["tool"] if goal else None, context_html, context_text, proposed, journal.effects
@@ -192,6 +201,7 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
         "provenance": {
             "mode": cell.provenance,
             "pages": page_provenance,
+            "cost": meter.summary(),
         },
     }
     return EpisodeResult(record, transcript, measures)

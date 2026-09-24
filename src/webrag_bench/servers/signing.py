@@ -17,7 +17,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp_types import CallToolResult
 
 from webrag_bench.corpus import NotInCorpusError, WarcReplay
-from webrag_bench.provenance import KeyRegistry, PartyKey, attach, issue
+from webrag_bench.provenance import KeyRegistry, PartyKey, ProvenanceMeter, attach, issue
 from webrag_bench.servers.journal import Journal
 
 
@@ -34,9 +34,14 @@ def party_keys(parties: list[str], seed: str) -> tuple[dict[str, PartyKey], KeyR
 
 
 def signed_http_server(
-    journal: Journal, replay: WarcReplay, keys: dict[str, PartyKey], issued_at: str = ""
+    journal: Journal,
+    replay: WarcReplay,
+    keys: dict[str, PartyKey],
+    issued_at: str = "",
+    meter: ProvenanceMeter | None = None,
 ) -> MCPServer:
     server = MCPServer("http")
+    m = meter or ProvenanceMeter()
 
     @server.tool()
     def get(url: str) -> CallToolResult:
@@ -48,7 +53,8 @@ def signed_http_server(
         key = keys.get(origin_of(url))
         if key is None:
             return CallToolResult(content=[], is_error=True)
-        return attach(page, issue(key, "http.get", {"url": url}, page, issued_at=issued_at))
+        att = m.timed_sign(issue, key, "http.get", {"url": url}, page, issued_at=issued_at)
+        return attach(page, att)
 
     @server.tool()
     def post(url: str, data: str) -> str:
@@ -59,15 +65,19 @@ def signed_http_server(
     return server
 
 
-def signed_peer_server(journal: Journal, key: PartyKey, issued_at: str = "") -> MCPServer:
+def signed_peer_server(
+    journal: Journal, key: PartyKey, issued_at: str = "", meter: ProvenanceMeter | None = None
+) -> MCPServer:
     server = MCPServer("peer")
+    m = meter or ProvenanceMeter()
 
     @server.tool()
     def delegate(instruction: str, derived_from: list[str] | None = None) -> CallToolResult:
         """Delegate a subtask to the peer agent; cite the attestations it derives from."""
         journal.record("peer.delegate", instruction=instruction)
         answer = "subtask accepted by the peer agent"
-        att = issue(
+        att = m.timed_sign(
+            issue,
             key,
             "peer.delegate",
             {"instruction": instruction},

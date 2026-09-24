@@ -8,6 +8,9 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Paper Y: delegation cost per episode (`measures.provenance.cost`): signing and
+  verification time, number of attestations, bytes added to messages. Peer answers
+  are verified too (`unverified-attestation` otherwise).
 - Paper Y: `provenance: [off, on]` factor. With `on`, pages and the peer agent are
   served by signing servers and the agent verifies each attestation; results go to a
   new `measures.jsonl` beside the records. `y-dry-run` plan. P episode ids unchanged.
