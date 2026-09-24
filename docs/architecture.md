@@ -44,7 +44,9 @@ Cell ──► index.search(request, top_k)
 | `records` | schema validation, JSONL I/O, vocabulary mapping | schema field names stay French |
 | `freeze` | fingerprint, entry gate | |
 | `security` | network guard | installed in every worker |
-| `analysis` | pilot timing | |
+| `analysis` | pilot timing, aggregation into MASTER_VALUES, campaign monitoring | |
+| `annotation` | annotation batch build and verification | see docs/annotation.md |
+| `provenance` | Ed25519 attestations, chains, PROV-O, MCP transport | paper Y; see docs/provenance.md |
 
 ## Dependency direction
 

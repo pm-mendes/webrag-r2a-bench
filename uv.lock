@@ -1894,6 +1894,7 @@ version = "0.1.0.dev0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
+    { name = "cryptography" },
     { name = "html2text" },
     { name = "jsonschema" },
     { name = "mcp" },
@@ -1919,6 +1920,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12" },
+    { name = "cryptography", specifier = ">=43" },
     { name = "html2text", specifier = ">=2024.2" },
     { name = "jsonschema", specifier = ">=4.20" },
     { name = "mcp", specifier = ">=2.2,<3" },
