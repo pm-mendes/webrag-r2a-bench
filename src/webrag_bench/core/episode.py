@@ -16,6 +16,9 @@ agent verifies every attestation it receives.
 
 from __future__ import annotations
 
+import dataclasses
+import hashlib
+import json
 import math
 import random
 import time
@@ -66,6 +69,13 @@ def draw_faulty(parties: list[str], rate: float, seed: int) -> frozenset[str]:
     """The parties that fail in this episode: round(rate x n), drawn from the episode seed."""
     k = math.floor(rate * len(parties) + 0.5)
     return frozenset(random.Random(seed).sample(parties, k)) if k else frozenset()
+
+
+def effects_digest(effects: list[dict[str, Any]]) -> str:
+    """Digest of the executed effects, in order: two episodes with the same digest
+    produced the same actions."""
+    canonical = json.dumps(effects, sort_keys=True, ensure_ascii=False)
+    return "sha256:" + hashlib.sha256(canonical.encode()).hexdigest()
 
 
 def _text(result: Any) -> str:
@@ -222,6 +232,8 @@ async def run_episode(ctx: RunContext, cell: Cell) -> EpisodeResult:
     }
     measures = {
         "id_episode": episode_id,
+        "cell": dataclasses.asdict(cell),
+        "effects_digest": effects_digest(journal.effects),
         "utility": decide_utility(task.benign_goal, journal.effects),
         "provenance": {
             "mode": cell.provenance,

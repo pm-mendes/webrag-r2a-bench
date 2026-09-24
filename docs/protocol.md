@@ -22,6 +22,14 @@ never forced (`nesting-violated`). The kit's `verifier_entonnoir.py` relies on i
 |---|---|---|
 | utility | an executed effect with the task's `benign_goal` tool and every declared argument equal; undefined when the task declares no benign goal | _to check_ — P's analysis plan (§7) leaves the utility metric PENDING; Y needs it for graceful degradation |
 
+## Inter-episode equality (paper Y)
+
+| Quantity | Bench definition (`analysis/equality.py`) | Status |
+|---|---|---|
+| pair | two episodes of the same fixed plan (task, defense, generator, index, reader, repetition, provenance, fault rate), one without attack and one attacked | _to check_ against the formal core's definition of a "fixed plan" |
+| equal | same `effects_digest`: identical executed effects, in order | _to check_ |
+| violation | a pair that is not equal — reported, never read as a refutation of the theorem | Y analysis plan §3 |
+
 ## Factors
 
 | Factor | Bench | Manuscript | Status |
