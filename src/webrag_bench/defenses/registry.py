@@ -3,14 +3,23 @@
 from __future__ import annotations
 
 from webrag_bench.defenses.base import Defense, NoDefense, UnspecifiedDefenseError
+from webrag_bench.defenses.provenance_demo import ProvenanceGateDemo
 from webrag_bench.defenses.tool_allowlist import ToolAllowlistDemo
 
 _DEFENSES: dict[str, type[Defense]] = {
     "none": NoDefense,
     "tool-allowlist-demo": ToolAllowlistDemo,
+    "provenance-demo": ProvenanceGateDemo,
 }
 
-PENDING_DEFENSES = ("progent", "PENDING-D2", "PENDING-D3", "PENDING-D4", "PENDING-D5")
+PENDING_DEFENSES = (
+    "progent",
+    "PENDING-D2",
+    "PENDING-D3",
+    "PENDING-D4",
+    "PENDING-D5",
+    "pbd",  # the provenance-bound delegation mechanism of paper Y
+)
 
 
 def get_defense(name: str) -> Defense:

@@ -15,7 +15,7 @@ provenance:
   key_seed: y-dry-run-keys-v1
   fault_mode: corrupt
 subplans:
-  main:
+  baseline:
     tasks: all
     families: [none, F1]
     defenses: [none]
@@ -24,4 +24,14 @@ subplans:
     readers: [bs4-text]
     repetitions: 1
     provenance: ["off", "on"]
+    fault_rates: [0.0, 0.5]
+  policy:                 # DEMO policy, only meaningful with signed provenance
+    tasks: all
+    families: [none, F1]
+    defenses: [provenance-demo]
+    generators: [stub]
+    indexes: [bm25]
+    readers: [bs4-text]
+    repetitions: 1
+    provenance: ["on"]
     fault_rates: [0.0, 0.5]

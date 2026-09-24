@@ -63,7 +63,7 @@ re-exports nothing, to keep imports acyclic (`corpus` and `defenses` use `core.t
 | To add… | Do |
 |---|---|
 | a reader | a function `str -> str` in `readers/`, registered in `readers/registry.py` with its package |
-| a defense | a `Defense` subclass in `defenses/`, registered in `defenses/registry.py`; remove it from `PENDING_DEFENSES` |
+| a defense | a `Defense` subclass in `defenses/`, registered in `defenses/registry.py`; remove it from `PENDING_DEFENSES`. `authorize(call, task, context)` receives a `DecisionContext` (signed provenance of each page); set `requires_provenance = True` if it needs it. The Y mechanism goes here as `pbd` |
 | a generator type | a class following `generators.base.Generator`, a `type` value in `config/models.py`, a branch in `generators/registry.py` |
 | a sandbox server | a module in `servers/` returning an `MCPServer`, registered in `servers/__init__.py`; add its effectful tools to `EFFECTFUL_TOOLS` |
 

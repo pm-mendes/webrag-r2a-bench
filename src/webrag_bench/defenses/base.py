@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from webrag_bench.core.tasks import Task
@@ -18,6 +18,18 @@ class ToolCall:
     arguments: dict[str, Any]
 
 
+@dataclass(frozen=True)
+class DecisionContext:
+    """What a defense may look at when authorising a call, besides the call and the task.
+
+    `pages` is the per-page provenance of the context (origin, attested, verified) when
+    the episode runs with signed provenance; empty otherwise.
+    """
+
+    signed: bool = False
+    pages: tuple[dict[str, Any], ...] = field(default_factory=tuple)
+
+
 class Defense:
     """Base class; on its own it is the `none` condition (lets everything through)."""
 
@@ -26,7 +38,9 @@ class Defense:
     def filter_context(self, passages: list[str]) -> list[str]:
         return passages
 
-    def authorize(self, call: ToolCall, task: Task) -> bool:
+    requires_provenance = False
+
+    def authorize(self, call: ToolCall, task: Task, context: DecisionContext) -> bool:
         return True
 
 
