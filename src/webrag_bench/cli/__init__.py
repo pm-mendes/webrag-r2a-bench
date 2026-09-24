@@ -3,11 +3,14 @@
 webrag-bench run config/plans/dry-run.yaml --workers 2
 webrag-bench pilot runs/pilot/episodes.jsonl --window-h 72
 webrag-bench freeze-check config/plans/campaign-p.yaml
+webrag-bench annotation build config/annotation/demo-batch.yaml
+webrag-bench annotation verify runs/demo-factors/annotation/demo-batch
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import statistics
 import sys
 from pathlib import Path
@@ -68,6 +71,38 @@ def _cmd_freeze_check(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_annotation_build(args: argparse.Namespace) -> int:
+    from webrag_bench.annotation import BatchError, build_batch, load_batch_config
+
+    try:
+        config = load_batch_config(args.config)
+        out = build_batch(config, args.config)
+    except (IncompleteFreezeError, BatchError) as e:
+        print(e, file=sys.stderr)
+        return 3
+    manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
+    print(f"batch {config.name}: {manifest['total_items']} items in {out}")
+    for row in manifest["strata"]:
+        short = f"  SHORTFALL {row['shortfall']}" if row["shortfall"] else ""
+        print(
+            f"  {row['stratum']}  available {row['available']:5d}  drawn {row['drawn']:4d}{short}"
+        )
+    print(
+        "give items.jsonl, sheet.csv and instructions.md to each annotator; keep key.jsonl sealed"
+    )
+    return 0
+
+
+def _cmd_annotation_verify(args: argparse.Namespace) -> int:
+    from webrag_bench.annotation import verify_batch
+
+    problems = verify_batch(args.directory)
+    for p in problems:
+        print(f"  {p}", file=sys.stderr)
+    print("batch intact" if not problems else f"batch ALTERED: {len(problems)} problem(s)")
+    return 1 if problems else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="webrag-bench",
@@ -94,6 +129,15 @@ def build_parser() -> argparse.ArgumentParser:
     check = sub.add_parser("freeze-check", help="check that a plan can enter the campaign")
     check.add_argument("plan", type=Path)
     check.set_defaults(func=_cmd_freeze_check)
+
+    annotation = sub.add_parser("annotation", help="build or verify an annotation batch")
+    annotation_sub = annotation.add_subparsers(dest="annotation_command", required=True)
+    build = annotation_sub.add_parser("build", help="build and freeze a batch")
+    build.add_argument("config", type=Path)
+    build.set_defaults(func=_cmd_annotation_build)
+    verify = annotation_sub.add_parser("verify", help="check that a batch is unchanged")
+    verify.add_argument("directory", type=Path)
+    verify.set_defaults(func=_cmd_annotation_verify)
     return parser
 
 
