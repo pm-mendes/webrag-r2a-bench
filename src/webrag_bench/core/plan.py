@@ -38,8 +38,21 @@ class Cell:
     repetition: int
 
     def key(self) -> str:
-        return "|".join(map(str, (self.subplan, self.task, self.family, self.defense,
-                                  self.generator, self.index, self.reader, self.repetition)))
+        return "|".join(
+            map(
+                str,
+                (
+                    self.subplan,
+                    self.task,
+                    self.family,
+                    self.defense,
+                    self.generator,
+                    self.index,
+                    self.reader,
+                    self.repetition,
+                ),
+            )
+        )
 
 
 class Plan:
@@ -70,8 +83,13 @@ class Plan:
             if unknown:
                 raise ValueError(f"subplan {name}: unknown tasks {sorted(unknown)}")
             for task, family, defense, generator, index, reader, rep in itertools.product(
-                tasks, grid.families, grid.defenses, grid.generators, grid.indexes,
-                grid.readers, range(grid.repetitions),
+                tasks,
+                grid.families,
+                grid.defenses,
+                grid.generators,
+                grid.indexes,
+                grid.readers,
+                range(grid.repetitions),
             ):
                 cells.append(Cell(name, task, family, defense, generator, index, reader, rep))
         return cells

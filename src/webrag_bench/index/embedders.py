@@ -52,8 +52,10 @@ class HttpEmbedder:
         request = urllib.request.Request(
             self._url,
             data=json.dumps({"model": self._model, "input": texts}).encode(),
-            headers={"Content-Type": "application/json",
-                     **({"Authorization": f"Bearer {self._key}"} if self._key else {})},
+            headers={
+                "Content-Type": "application/json",
+                **({"Authorization": f"Bearer {self._key}"} if self._key else {}),
+            },
         )
         with urllib.request.urlopen(request, timeout=120) as response:
             payload = json.load(response)
@@ -65,5 +67,6 @@ class HttpEmbedder:
 def build_embedder(config: EmbedderConfig) -> Embedder:
     if config.type == "stub":
         return StubEmbedder()
-    assert config.base_url and config.model  # enforced by EmbedderConfig
+    if not (config.base_url and config.model):  # also enforced by EmbedderConfig
+        raise ValueError("an openai-compatible embedder needs base_url and model")
     return HttpEmbedder(config.base_url, config.model, config.key_env)

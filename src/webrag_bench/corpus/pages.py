@@ -42,8 +42,10 @@ def load_benign_pages(corpus_dir: Path) -> list[Page]:
     manifest = _Manifest.model_validate(
         yaml.safe_load((corpus_dir / "pages.yaml").read_text(encoding="utf-8"))
     )
-    return [Page(e.url, (corpus_dir / "pages" / e.file).read_text(encoding="utf-8"))
-            for e in manifest.pages]
+    return [
+        Page(e.url, (corpus_dir / "pages" / e.file).read_text(encoding="utf-8"))
+        for e in manifest.pages
+    ]
 
 
 def adversarial_url(target_url: str, family: str, task_id: str) -> str:
@@ -58,8 +60,9 @@ def is_adversarial_url(url: str, family: str | None = None) -> bool:
     return family is None or url.rsplit(marker, 1)[1].startswith(f"{family}-")
 
 
-def build_adversarial_pages(benign: list[Page], tasks: list[Task],
-                            templates: dict[str, Template], salt: str) -> list[Page]:
+def build_adversarial_pages(
+    benign: list[Page], tasks: list[Task], templates: dict[str, Template], salt: str
+) -> list[Page]:
     by_url = {p.url: p for p in benign}
     pages = []
     for task in tasks:

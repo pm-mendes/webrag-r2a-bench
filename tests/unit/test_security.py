@@ -2,13 +2,13 @@ import socket
 
 import pytest
 
-from webrag_bench.security import ForbiddenConnection, install_guard, remove_guard
+from webrag_bench.security import ForbiddenConnectionError, install_guard, remove_guard
 
 
 def test_guard_refuses_third_party_host():
     install_guard(set())
     try:
-        with pytest.raises(ForbiddenConnection):
+        with pytest.raises(ForbiddenConnectionError):
             socket.create_connection(("93.184.216.34", 80), timeout=1)
     finally:
         remove_guard()

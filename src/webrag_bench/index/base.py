@@ -27,6 +27,8 @@ def tokenize(text: str) -> list[str]:
     return "".join(c.lower() if c.isalnum() else " " for c in text).split()
 
 
-def top_k(docs: list[Doc], scores: Scores, k: int, positive_only: bool = False) -> list[tuple[Doc, float]]:
+def top_k(
+    docs: list[Doc], scores: Scores, k: int, positive_only: bool = False
+) -> list[tuple[Doc, float]]:
     order = np.argsort(-scores, kind="stable")[:k]
     return [(docs[i], float(scores[i])) for i in order if not positive_only or scores[i] > 0]

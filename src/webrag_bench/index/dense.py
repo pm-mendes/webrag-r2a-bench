@@ -17,7 +17,8 @@ class DenseIndex:
         self._matrix = embedder.encode([d.text for d in docs]) if docs else np.zeros((0, 1))
 
     def scores(self, query: str) -> Scores:
-        return self._matrix @ self._embedder.encode([query])[0]
+        scores: Scores = self._matrix @ self._embedder.encode([query])[0]
+        return scores
 
     def search(self, query: str, k: int) -> list[tuple[Doc, float]]:
         return top_k(self.docs, self.scores(query), k)

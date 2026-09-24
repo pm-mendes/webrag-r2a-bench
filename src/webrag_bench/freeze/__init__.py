@@ -6,6 +6,10 @@ freeze changes the fingerprint, and the change is visible in the data.
 """
 
 from webrag_bench.freeze.fingerprint import fingerprint
-from webrag_bench.freeze.gate import IncompleteFreeze, blocking_markers, require_complete_freeze
+from webrag_bench.freeze.gate import (
+    IncompleteFreezeError,
+    blocking_markers,
+    require_complete_freeze,
+)
 
-__all__ = ["IncompleteFreeze", "blocking_markers", "fingerprint", "require_complete_freeze"]
+__all__ = ["IncompleteFreezeError", "blocking_markers", "fingerprint", "require_complete_freeze"]

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from webrag_bench.defenses.base import Defense, NoDefense, UnspecifiedDefense
+from webrag_bench.defenses.base import Defense, NoDefense, UnspecifiedDefenseError
 from webrag_bench.defenses.tool_allowlist import ToolAllowlistDemo
 
 _DEFENSES: dict[str, type[Defense]] = {
@@ -17,7 +17,7 @@ def get_defense(name: str) -> Defense:
     if name in _DEFENSES:
         return _DEFENSES[name]()
     if name in PENDING_DEFENSES:
-        raise UnspecifiedDefense(
+        raise UnspecifiedDefenseError(
             f"defense {name!r}: exact configuration and code version must be imported from "
             "the manuscript into config/frozen/defenses/; it is not approximated here"
         )

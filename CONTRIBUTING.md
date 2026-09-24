@@ -3,9 +3,10 @@
 ## Setup
 
 ```bash
-uv sync --locked          # creates .venv from uv.lock, dev tools included
-make check                # lint + types + tests
+make install              # uv sync --locked + pre-commit hooks
+make check                # lint + strict types + tests (what CI runs)
 make dry-run              # 5 tasks x 2 conditions, stub generator
+make help                 # every target
 ```
 
 `uv.lock` is the source of truth for dependency versions. Change dependencies with

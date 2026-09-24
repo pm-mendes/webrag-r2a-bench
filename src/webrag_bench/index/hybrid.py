@@ -17,5 +17,7 @@ class HybridIndex:
         self._dense, self._bm25, self._alpha = dense, bm25, alpha
 
     def search(self, query: str, k: int) -> list[tuple[Doc, float]]:
-        scores = self._alpha * self._dense.scores(query) + (1 - self._alpha) * self._bm25.scores(query)
+        scores = self._alpha * self._dense.scores(query) + (1 - self._alpha) * self._bm25.scores(
+            query
+        )
         return top_k(self.docs, scores, k)

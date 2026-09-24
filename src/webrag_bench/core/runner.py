@@ -47,8 +47,13 @@ class RunSummary:
 def bench_version() -> str:
     """Git tag (or commit) of the bench; `-dirty` if the tree has local changes."""
     try:
-        out = subprocess.run(["git", "describe", "--tags", "--always", "--dirty"], cwd=ROOT,
-                             capture_output=True, text=True, check=True).stdout.strip()
+        out = subprocess.run(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "untagged"
     return out or "untagged"
@@ -67,11 +72,20 @@ def prepare(plan: Plan, output_dir: Path) -> Prepared:
     adversarial = build_adversarial_pages(benign, plan.tasks(), templates, cfg.canary_salt)
     warc = output_dir / "corpus.warc"
     warc_sha = write_warc(benign + adversarial, warc)
-    digest = fingerprint(plan.frozen_paths() + [warc], ROOT)
+    digest = fingerprint([*plan.frozen_paths(), warc], ROOT)
     freeze_fp = digest if plan.is_frozen else f"NOT-FROZEN:{digest}"
-    (output_dir / "freeze.json").write_text(json.dumps(
-        {"plan": plan.name, "empreinte_gel": freeze_fp, "sha256_warc": warc_sha,
-         "version_banc": bench_version()}, indent=2), encoding="utf-8")
+    (output_dir / "freeze.json").write_text(
+        json.dumps(
+            {
+                "plan": plan.name,
+                "empreinte_gel": freeze_fp,
+                "sha256_warc": warc_sha,
+                "version_banc": bench_version(),
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
     return Prepared(output_dir, warc, freeze_fp)
 
 
@@ -95,8 +109,9 @@ def _run_one(cell: Cell) -> dict[str, Any]:
         return {"_failed": True, "cell": cell.key(), "error": f"{type(e).__name__}: {e}"}
 
 
-def run_plan(plan_path: Path, workers: int = 1, limit: int | None = None,
-             progress_every: int = 50) -> RunSummary:
+def run_plan(
+    plan_path: Path, workers: int = 1, limit: int | None = None, progress_every: int = 50
+) -> RunSummary:
     plan = load_plan(plan_path)
     prepared = prepare(plan, ROOT / "runs" / plan.name)
     episodes = prepared.output_dir / "episodes.jsonl"
@@ -105,8 +120,11 @@ def run_plan(plan_path: Path, workers: int = 1, limit: int | None = None,
     cells = plan.cells()
     done = completed_ids(episodes)
     todo = [c for c in cells if plan.episode_id_and_seed(c)[0] not in done][:limit]
-    print(f"plan {plan.name}: {len(cells)} cells, {len(done)} already done, {len(todo)} to run "
-          f"- fingerprint {prepared.freeze_fingerprint[:24]}...", flush=True)
+    print(
+        f"plan {plan.name}: {len(cells)} cells, {len(done)} already done, {len(todo)} to run "
+        f"- fingerprint {prepared.freeze_fingerprint[:24]}...",
+        flush=True,
+    )
 
     written = failed = 0
     init_args = (str(plan.path), str(prepared.warc), prepared.freeze_fingerprint, bench_version())

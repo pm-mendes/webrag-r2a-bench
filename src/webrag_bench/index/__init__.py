@@ -8,8 +8,8 @@ from webrag_bench.index.base import Doc, Index
 from webrag_bench.index.bm25 import BM25Index
 from webrag_bench.index.dense import DenseIndex
 from webrag_bench.index.embedders import Embedder, HttpEmbedder, StubEmbedder, build_embedder
-from webrag_bench.index.hybrid import HybridIndex
 from webrag_bench.index.factory import build_index
+from webrag_bench.index.hybrid import HybridIndex
 
 __all__ = [
     "BM25Index",

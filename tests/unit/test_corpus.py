@@ -1,7 +1,7 @@
 import pytest
 
 from webrag_bench.corpus import (
-    NotInCorpus,
+    NotInCorpusError,
     Page,
     WarcReplay,
     adversarial_url,
@@ -15,7 +15,7 @@ def test_replay_has_no_network_fallback(tmp_path):
     write_warc([Page("https://a.test/x", "<html>x</html>")], warc)
     replay = WarcReplay(warc)
     assert replay.get("https://a.test/x") == "<html>x</html>"
-    with pytest.raises(NotInCorpus):
+    with pytest.raises(NotInCorpusError):
         replay.get("https://a.test/missing")
 
 

@@ -18,6 +18,8 @@ def test_full_episode_produces_a_valid_record(dry_run_plan_path, tmp_path):
         assert r["empreinte_gel"].startswith("NOT-FROZEN:")
         assert "stub-component: episode has no measurement value" in r["erreurs"]
         assert "nesting-violated" not in r["erreurs"]
-    by_defense = {(r["tache"]["id"], r["condition_defense"]): r["etages"]["action"] for r in records}
+    by_defense = {
+        (r["tache"]["id"], r["condition_defense"]): r["etages"]["action"] for r in records
+    }
     assert by_defense[("T01", "none")] is True
     assert by_defense[("T01", "tool-allowlist-demo")] is False  # bank.transfer not allowed

@@ -22,8 +22,16 @@ _RETRYABLE = (429, 500, 502, 503, 504)
 class OpenAICompatibleGenerator:
     is_stub = False
 
-    def __init__(self, name: str, version_id: str, base_url: str, key_env: str | None,
-                 temperature: float = 0.0, max_tokens: int = 1024, seed: int | None = None) -> None:
+    def __init__(
+        self,
+        name: str,
+        version_id: str,
+        base_url: str,
+        key_env: str | None,
+        temperature: float = 0.0,
+        max_tokens: int = 1024,
+        seed: int | None = None,
+    ) -> None:
         self.name, self.version_id = name, version_id
         self._url = base_url.rstrip("/") + "/chat/completions"
         self._key = os.environ.get(key_env, "") if key_env else ""
@@ -38,20 +46,30 @@ class OpenAICompatibleGenerator:
     def generate(self, system: str, user: str, tools: list[dict[str, Any]]) -> Response:
         body: dict[str, Any] = {
             "model": self.version_id,
-            "messages": [{"role": "system", "content": system},
-                         {"role": "user", "content": user}],
-            "tools": [{"type": "function", "function": {
-                "name": self._function_name(t["name"]), "description": t["description"],
-                "parameters": t["schema"]}} for t in tools],
+            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            "tools": [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": self._function_name(t["name"]),
+                        "description": t["description"],
+                        "parameters": t["schema"],
+                    },
+                }
+                for t in tools
+            ],
             "temperature": self._temperature,
             "max_tokens": self._max_tokens,
         }
         if self._seed is not None:
             body["seed"] = self._seed
         request = urllib.request.Request(
-            self._url, data=json.dumps(body).encode(),
-            headers={"Content-Type": "application/json",
-                     **({"Authorization": f"Bearer {self._key}"} if self._key else {})},
+            self._url,
+            data=json.dumps(body).encode(),
+            headers={
+                "Content-Type": "application/json",
+                **({"Authorization": f"Bearer {self._key}"} if self._key else {}),
+            },
         )
         payload = self._send(request)
         message = payload["choices"][0]["message"]
@@ -66,8 +84,12 @@ class OpenAICompatibleGenerator:
         returned = str(payload.get("model", ""))
         if returned != self.version_id:
             errors.append(f"model-substitution: declared={self.version_id} returned={returned}")
-        return Response(text=message.get("content") or "", calls=calls,
-                        returned_model_id=returned, errors=errors)
+        return Response(
+            text=message.get("content") or "",
+            calls=calls,
+            returned_model_id=returned,
+            errors=errors,
+        )
 
     @staticmethod
     def _send(request: urllib.request.Request, attempts: int = 4) -> dict[str, Any]:

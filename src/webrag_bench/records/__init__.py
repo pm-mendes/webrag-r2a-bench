@@ -7,7 +7,7 @@ English vocabulary to the schema's.
 """
 
 from webrag_bench.records.io import append_record, completed_ids
-from webrag_bench.records.mapping import to_schema_family, to_schema_index, to_schema_action_type
+from webrag_bench.records.mapping import to_schema_action_type, to_schema_family, to_schema_index
 from webrag_bench.records.schema import arguments_digest, validate_record
 
 __all__ = [
