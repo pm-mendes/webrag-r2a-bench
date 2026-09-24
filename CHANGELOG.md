@@ -8,6 +8,9 @@ separately as `freeze-<paper>-<YYYY-MM-DD>`.
 ## [Unreleased]
 
 ### Added
+- Paper Y: inter-episode equality. Measures record the cell and an `effects_digest`;
+  `analysis.equality` pairs clean and attacked episodes of the same fixed plan and
+  reports equal pairs and violations (operationalisation to check).
 - Utility oracle: tasks may declare a `benign_goal`; `measures.utility` says whether it
   was executed (undefined for answer-only tasks). The stub generator makes the benign
   call first so that the oracle is exercised in dry runs. Demo tasks declare goals.
