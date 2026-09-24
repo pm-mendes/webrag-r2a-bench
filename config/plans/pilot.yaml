@@ -1,0 +1,30 @@
+# PILOT - replaces the 42 s/episode assumption with a measured median.
+# To fill in: the four generators of P (and the two of Y) with their exact version
+# id, their endpoints and the environment variables holding the keys; the OVH
+# embedder. Validation fails while a PENDING value is left: nothing is substituted.
+name: pilot
+status: PILOT
+canary_salt: pilot-v1
+corpus: corpus
+attacks_dir: config/demo/attacks
+tasks_dir: config/demo/tasks
+top_k: 3
+hybrid_alpha: 0.5
+embedder:
+  type: openai-compatible
+  base_url: "PENDING - embedder on the OVH machine, e.g. http://<ovh-host>:8001/v1"
+  model: "PENDING"
+generators:
+  - {name: G1, type: openai-compatible, version_id: "PENDING", base_url: "PENDING", key_env: WEBRAG_KEY_G1}
+  - {name: G2, type: openai-compatible, version_id: "PENDING", base_url: "PENDING", key_env: WEBRAG_KEY_G2}
+  - {name: G3, type: openai-compatible, version_id: "PENDING", base_url: "PENDING", key_env: WEBRAG_KEY_G3}
+  - {name: G4-8B-OVH, type: openai-compatible, version_id: "PENDING", base_url: "PENDING - vLLM on OVH"}
+subplans:
+  main:
+    tasks: all
+    families: [F1, F2]
+    defenses: [none]
+    generators: [G1, G2, G3, G4-8B-OVH]
+    indexes: [hybrid]
+    readers: [bs4-text]
+    repetitions: 2

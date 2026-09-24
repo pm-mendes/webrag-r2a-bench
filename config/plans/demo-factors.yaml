@@ -1,0 +1,22 @@
+# Every factor of the bench (families x defenses x indexes x readers), still with a
+# STUB generator and embedder. Tests the bench; measures nothing. 600 episodes.
+name: demo-factors
+status: DEMO
+canary_salt: demo-factors-v1
+corpus: corpus
+attacks_dir: config/demo/attacks
+tasks_dir: config/demo/tasks
+top_k: 3
+hybrid_alpha: 0.5
+embedder: {type: stub}
+generators:
+  - {name: stub, type: stub, version_id: stub-0}
+subplans:
+  main:
+    tasks: all
+    families: [none, F1, F2, F3, F4]
+    defenses: [none, tool-allowlist-demo]
+    generators: [stub]
+    indexes: [bm25, dense, hybrid]
+    readers: [bs4-text, bs4-raw, html2text, trafilatura]
+    repetitions: 1

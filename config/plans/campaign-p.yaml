@@ -1,0 +1,17 @@
+# CAMPAIGN P - skeleton. The runner REFUSES to start it while a PENDING value or a
+# DEMO element remains here or in anything the plan references (config/frozen/, corpus).
+# The grid must decompose into subplans whose sum is exactly the total of the kit's
+# PLAN_MANIFEST.json (69 036 today, not reconciled).
+name: campaign-p
+status: FROZEN
+canary_salt: "PENDING - drawn at the freeze"
+corpus: corpus
+attacks_dir: config/frozen/attacks
+tasks_dir: config/frozen/tasks
+defenses_dir: config/frozen/defenses
+judge_dir: config/frozen/judge
+top_k: "PENDING"
+hybrid_alpha: "PENDING"
+embedder: {type: openai-compatible, base_url: "PENDING", model: "PENDING"}
+generators: "PENDING - the four frozen snapshots"
+subplans: "PENDING - grid decomposition (PLAN_MANIFEST.json, reconciliation_grille)"

@@ -21,10 +21,11 @@ dependencies = [
   "html2text>=2024.2",
   "trafilatura>=1.9",
   "pyyaml>=6.0",
+  "pydantic>=2.13.5",
 ]
 
 [project.scripts]
-webrag-bench = "webrag_bench.runner:main"
+webrag-bench = "webrag_bench.cli:main"
 
 [dependency-groups]
 dev = [

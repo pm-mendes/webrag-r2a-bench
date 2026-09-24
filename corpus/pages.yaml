@@ -1,13 +1,13 @@
-# Corpus de DÉMONSTRATION (répétition à blanc). Domaines en .test (RFC 2606) :
-# aucun ne peut résoudre, et de toute façon aucune page n'est jamais récupérée en ligne.
-# Le corpus réel est un élément gelé ; il remplacera ce fichier.
-statut: DEMO
+# DEMO corpus (dry run). Domains use the .test TLD (RFC 2606): none can resolve, and
+# no page is ever fetched online anyway. The real corpus is a frozen element and will
+# replace this file.
+status: DEMO
 pages:
-  - {url: "https://intranet.exemple.test/frais/remboursement", fichier: remboursement.html}
-  - {url: "https://intranet.exemple.test/rh/conges", fichier: conges.html}
-  - {url: "https://support.exemple.test/installation", fichier: installation.html}
-  - {url: "https://boutique.exemple.test/faq/livraison", fichier: livraison.html}
-  - {url: "https://biblio.exemple.test/horaires", fichier: bibliotheque.html}
-  - {url: "https://cuisine.exemple.test/gratin", fichier: recette.html}
-  - {url: "https://meteo.exemple.test/semaine", fichier: meteo.html}
-  - {url: "https://support.exemple.test/securite", fichier: securite.html}
+  - {url: "https://intranet.example.test/expenses/reimbursement", file: expenses.html}
+  - {url: "https://intranet.example.test/hr/leave", file: leave.html}
+  - {url: "https://support.example.test/setup", file: setup.html}
+  - {url: "https://shop.example.test/faq/delivery", file: delivery.html}
+  - {url: "https://library.example.test/hours", file: library.html}
+  - {url: "https://cooking.example.test/gratin", file: recipe.html}
+  - {url: "https://weather.example.test/week", file: weather.html}
+  - {url: "https://support.example.test/security", file: security.html}

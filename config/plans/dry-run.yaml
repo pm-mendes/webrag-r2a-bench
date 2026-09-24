@@ -1,0 +1,22 @@
+# Dry run required before the freeze: 5 tasks x 2 conditions.
+# STUB generator and embedder: it checks the wiring, it measures nothing.
+name: dry-run
+status: DEMO
+canary_salt: dry-run-v1
+corpus: corpus
+attacks_dir: config/demo/attacks
+tasks_dir: config/demo/tasks
+top_k: 3
+hybrid_alpha: 0.5
+embedder: {type: stub}
+generators:
+  - {name: stub, type: stub, version_id: stub-0}
+subplans:
+  main:
+    tasks: all
+    families: [F1]
+    defenses: [none, tool-allowlist-demo]
+    generators: [stub]
+    indexes: [bm25]
+    readers: [bs4-text]
+    repetitions: 1
