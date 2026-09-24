@@ -188,15 +188,27 @@ def check_publishable(run: LoadedRun) -> None:
 
 
 def merge_into_master(master_path: Path, fragment: dict[str, Any]) -> list[str]:
-    """Replace only the sections produced by the bench; keep every other key and comment."""
+    """Replace only the keys produced by the bench; keep every other key and comment.
+
+    Strict: a section or key that the master does not declare is refused rather than
+    added — the kit, not the bench, decides which values the manuscript uses.
+    """
     master = json.loads(master_path.read_text(encoding="utf-8"))
+    unknown = [
+        f"{section}.{key}"
+        for section, content in fragment.items()
+        if not section.startswith("_")
+        for key in content
+        if key not in master.get(section, {})
+    ]
+    if unknown:
+        raise AggregationError(f"keys not declared in {master_path.name}: {', '.join(unknown)}")
     written = []
     for section, content in fragment.items():
         if section.startswith("_"):
             continue
-        target = master.setdefault(section, {})
         for key, value in content.items():
-            target[key] = value
+            master[section][key] = value
             written.append(f"{section}.{key}")
     master_path.write_text(
         json.dumps(master, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"

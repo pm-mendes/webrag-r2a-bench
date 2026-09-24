@@ -62,6 +62,9 @@ def _cmd_pilot(args: argparse.Namespace) -> int:
         except AggregationError as e:
             print(e, file=sys.stderr)
             return 3
+        master = json.loads(args.master.read_text(encoding="utf-8"))
+        declared = master.get("pilote", {})
+        values = {k: v for k, v in values.items() if k in declared}  # P and Y differ
         written = merge_into_master(args.master, {"pilote": values})
         print(f"wrote {len(written)} pilot value(s) into {args.master}")
     targets = {**CAMPAIGN_EPISODES, "P+Y (shared machine)": sum(CAMPAIGN_EPISODES.values())}
@@ -146,6 +149,38 @@ def _cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_aggregate_y(args: argparse.Namespace) -> int:
+    from webrag_bench.analysis import (
+        AggregationError,
+        check_publishable,
+        load_run,
+        merge_into_master,
+    )
+    from webrag_bench.analysis.aggregate_y import y_fragment
+
+    try:
+        fragment = y_fragment(args.run, args.policy, args.partial_fault_rate)
+    except AggregationError as e:
+        print(e, file=sys.stderr)
+        return 3
+    out = args.run / "master_values_fragment_y.json"
+    out.write_text(json.dumps(fragment, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    for section, content in fragment.items():
+        if not section.startswith("_"):
+            for key, value in content.items():
+                print(f"  {section}.{key} = {value}")
+    print(f"-> {out}")
+    if args.master:
+        try:
+            check_publishable(load_run(args.run))
+            written = merge_into_master(args.master, fragment)
+        except AggregationError as e:
+            print(e, file=sys.stderr)
+            return 3
+        print(f"wrote {len(written)} value(s) into {args.master}")
+    return 0
+
+
 def _cmd_annotation_build(args: argparse.Namespace) -> int:
     from webrag_bench.annotation import BatchError, build_batch, load_batch_config
 
@@ -217,6 +252,20 @@ def build_parser() -> argparse.ArgumentParser:
         "--master", type=Path, help="merge into this MASTER_VALUES.json (frozen, tagged runs only)"
     )
     aggregate.set_defaults(func=_cmd_aggregate)
+
+    aggregate_y = sub.add_parser("aggregate-y", help="paper Y measures in its MASTER_VALUES format")
+    aggregate_y.add_argument("run", type=Path)
+    aggregate_y.add_argument(
+        "--policy", default="pbd", help="defense condition that implements Y (default: pbd)"
+    )
+    aggregate_y.add_argument(
+        "--partial-fault-rate",
+        type=float,
+        required=True,
+        help="the fault rate reported as 'partial failure'",
+    )
+    aggregate_y.add_argument("--master", type=Path, help="merge into the 08 MASTER_VALUES.json")
+    aggregate_y.set_defaults(func=_cmd_aggregate_y)
 
     check = sub.add_parser("freeze-check", help="check that a plan can enter the campaign")
     check.add_argument("plan", type=Path)
